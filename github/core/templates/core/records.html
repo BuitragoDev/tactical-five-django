@@ -1,0 +1,102 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Récords · Tactical Five</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Roboto+Condensed:wght@300;400;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="{% static 'css/records.css' %}">
+</head>
+<body>
+
+<div class="bg-noise"></div>
+<div class="bg-stripes"></div>
+
+<div class="app">
+
+  {% include 'core/sidebar.html' with sidebar_page='records' %}
+
+  <form method="post" action="{% url 'advance_day' %}" id="advanceForm" style="display:none;">
+    {% csrf_token %}
+  </form>
+  <form method="post" action="{% url 'reset_game' %}" id="resetForm" style="display:none;">
+    {% csrf_token %}
+  </form>
+
+  <div class="main">
+    {% include 'core/header.html' %}
+
+    <div class="content">
+      <div class="panel panel-records">
+        <div class="panel-title-row">
+          <div class="panel-title">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 15l-2 5l9-13h-7l2-5l-9 13h7z"/></svg>
+            Récords NBA
+          </div>
+          <div class="filter-tabs">
+            <a href="?filter=team" class="filter-tab{% if filter_type == 'team' %} active{% endif %}">
+              Mi Equipo
+            </a>
+            <a href="?filter=season" class="filter-tab{% if filter_type == 'season' %} active{% endif %}">
+              Temporada
+            </a>
+            <a href="?filter=historical" class="filter-tab{% if filter_type == 'historical' %} active{% endif %}">
+              Histórico
+            </a>
+          </div>
+        </div>
+
+        <table class="records-table">
+          <thead>
+            <tr>
+              <th class="col-stat">Estadística</th>
+              <th class="col-value">Valor</th>
+              <th class="col-player">Jugador</th>
+              {% if filter_type != 'team' %}
+              <th class="col-team">Equipo</th>
+              {% endif %}
+              <th class="col-date">Fecha</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for r in records %}
+            <tr>
+              <td class="col-stat">{{ r.stat }}</td>
+              <td class="col-value">{{ r.value }}</td>
+              <td class="col-player">{{ r.player }}</td>
+              {% if filter_type != 'team' %}
+              <td class="col-team">{{ r.team }}</td>
+              {% endif %}
+              <td class="col-date">{{ r.date }}</td>
+            </tr>
+            {% empty %}
+            <tr>
+              <td colspan="{% if filter_type != 'team' %}5{% else %}4{% endif %}" class="no-records">
+                No hay récords disponibles
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+document.getElementById('btnAdvance')?.addEventListener('click', function() {
+  document.getElementById('advanceForm').submit();
+});
+document.getElementById('btnReset')?.addEventListener('click', function(e) {
+  e.preventDefault();
+  if (confirm('¿Seguro que quieres reiniciar la partida? Se perderán todos los datos.')) {
+    document.getElementById('resetForm').submit();
+  }
+});
+</script>
+
+</body>
+</html>

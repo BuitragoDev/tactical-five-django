@@ -1,0 +1,195 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Resultados · Tactical Five</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Roboto+Condensed:wght@300;400;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="{% static 'css/game_results.css' %}">
+</head>
+<body>
+
+<div class="bg-noise"></div>
+<div class="bg-stripes"></div>
+
+<div class="app">
+
+  <div class="main">
+    <header class="top-header">
+      <div class="header-left">
+        {% if team.logo %}
+        <img src="{% static team.logo %}" alt="{{ team.name }}" class="header-logo">
+        {% endif %}
+        <div class="header-info">
+          <div class="header-team-name">{{ team.name }} <span class="header-subtitle">(RESULTADOS DE LA JORNADA)</span></div>
+          <div class="header-manager">Manager: <strong>{{ manager_name }}</strong></div>
+        </div>
+      </div>
+      <div class="header-right">
+        <div class="header-season">
+          <span class="season-label">Temporada {{ season_label }}</span>
+        </div>
+        <div class="header-date">{{ current_date }}</div>
+        <div class="header-game-day">Jornada {{ game_day }}</div>
+        <a href="{% url 'dashboard' %}" class="btn-header-back" id="btnDashboard">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-4 0a1 1 0 01-1-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 01-1 1"/></svg>
+          Dashboard
+        </a>
+      </div>
+    </header>
+
+    <div class="content">
+
+      <div class="results-layout">
+        <div class="results-column">
+          <div class="results-title">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9H4.5a2.5 2.5 0 010-5C7 4 6 9 6 9zM18 9h1.5a2.5 2.5 0 000-5C17 4 18 9 18 9zM4 22h16M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20 7 22M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20 17 22M18 20V10M12 20V4M6 20v-6"/></svg>
+            Resultados
+          </div>
+
+          {% for r in results %}
+          <div class="game-card {% if r.game.home_team == team or r.game.away_team == team %}my-game{% endif %}">
+            <div class="game-card-content">
+              <div class="game-card-team-side">
+                <span class="game-card-team-name {% if r.game.home_team == team %}my-team{% endif %}">{{ r.game.home_team.name }}</span>
+                {% if r.game.home_team.logo %}
+                <img src="{% static r.game.home_team.logo %}" alt="{{ r.game.home_team.name }}" class="game-card-logo">
+                {% endif %}
+              </div>
+              <div class="game-card-score">
+                <span class="game-card-score-val">{{ r.game.home_score }}</span>
+                <span class="game-card-score-sep">-</span>
+                <span class="game-card-score-val">{{ r.game.away_score }}</span>
+              </div>
+              <div class="game-card-team-side">
+                {% if r.game.away_team.logo %}
+                <img src="{% static r.game.away_team.logo %}" alt="{{ r.game.away_team.name }}" class="game-card-logo">
+                {% endif %}
+                <span class="game-card-team-name {% if r.game.away_team == team %}my-team{% endif %}">{{ r.game.away_team.name }}</span>
+              </div>
+            </div>
+          </div>
+          {% endfor %}
+        </div>
+
+        <div class="stats-column">
+          {% if mvp %}
+          <div class="mvp-panel">
+            <div class="mvp-badge">
+              <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+              <span>MVP de la Jornada</span>
+            </div>
+            <div class="mvp-content">
+              <div class="mvp-player-info">
+                {% if mvp.player.team.logo %}
+                <img src="{% static mvp.player.team.logo %}" alt="{{ mvp.player.team.name }}" class="mvp-team-logo">
+                {% endif %}
+                <div class="mvp-player-details">
+                  <span class="mvp-player-name">{{ mvp.player.full_name }}</span>
+                  <span class="mvp-player-team">{{ mvp.player.team.name }}</span>
+                  <span class="mvp-player-pos">{{ mvp.player.position }}</span>
+                </div>
+              </div>
+              <div class="mvp-stats">
+                <div class="mvp-stat">
+                  <span class="mvp-stat-val">{{ mvp.points }}</span>
+                  <span class="mvp-stat-label">PTS</span>
+                </div>
+                <div class="mvp-stat">
+                  <span class="mvp-stat-val">{{ mvp.rebounds }}</span>
+                  <span class="mvp-stat-label">REB</span>
+                </div>
+                <div class="mvp-stat">
+                  <span class="mvp-stat-val">{{ mvp.assists }}</span>
+                  <span class="mvp-stat-label">AST</span>
+                </div>
+                <div class="mvp-stat mvp-rating">
+                  <span class="mvp-stat-val">{{ mvp.rating }}</span>
+                  <span class="mvp-stat-label">VAL</span>
+                </div>
+              </div>
+            </div>
+          </div>
+          {% endif %}
+
+          <div class="leaderboards">
+            <div class="leaderboard-section">
+              <div class="leaderboard-title">
+                <span class="lb-icon">🏀</span> Máximos Anotadores
+              </div>
+              {% for ps in top_scorers %}
+              <div class="leaderboard-row {% if ps.player.team == team %}my-player{% endif %}">
+                <span class="lb-rank {% if forloop.counter == 1 %}lb-first{% endif %}">{{ forloop.counter }}</span>
+                {% if ps.player.team.logo %}
+                <img src="{% static ps.player.team.logo %}" alt="" class="lb-logo">
+                {% endif %}
+                <div class="lb-info">
+                  <span class="lb-name">{{ ps.player.full_name }}</span>
+                  <span class="lb-team">{{ ps.player.team.abbreviation }} · {{ ps.player.position }}</span>
+                </div>
+                <span class="lb-value">{{ ps.points }}</span>
+              </div>
+              {% endfor %}
+            </div>
+
+            <div class="leaderboard-section">
+              <div class="leaderboard-title">
+                <span class="lb-icon">⛹️</span> Máximos Reboteadores
+              </div>
+              {% for ps in top_rebounders %}
+              <div class="leaderboard-row {% if ps.player.team == team %}my-player{% endif %}">
+                <span class="lb-rank {% if forloop.counter == 1 %}lb-first{% endif %}">{{ forloop.counter }}</span>
+                {% if ps.player.team.logo %}
+                <img src="{% static ps.player.team.logo %}" alt="" class="lb-logo">
+                {% endif %}
+                <div class="lb-info">
+                  <span class="lb-name">{{ ps.player.full_name }}</span>
+                  <span class="lb-team">{{ ps.player.team.abbreviation }} · {{ ps.player.position }}</span>
+                </div>
+                <span class="lb-value">{{ ps.rebounds }}</span>
+              </div>
+              {% endfor %}
+            </div>
+
+            <div class="leaderboard-section">
+              <div class="leaderboard-title">
+                <span class="lb-icon">🎯</span> Máximos Asistentes
+              </div>
+              {% for ps in top_assisters %}
+              <div class="leaderboard-row {% if ps.player.team == team %}my-player{% endif %}">
+                <span class="lb-rank">{{ forloop.counter }}</span>
+                {% if ps.player.team.logo %}
+                <img src="{% static ps.player.team.logo %}" alt="" class="lb-logo">
+                {% endif %}
+                <div class="lb-info">
+                  <span class="lb-name">{{ ps.player.full_name }}</span>
+                  <span class="lb-team">{{ ps.player.team.abbreviation }} · {{ ps.player.position }}</span>
+                </div>
+                <span class="lb-value">{{ ps.assists }}</span>
+              </div>
+              {% endfor %}
+            </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<script>
+document.addEventListener('keydown', function(e) {
+  if (e.key === 'c' || e.key === 'C') {
+    var inputFocused = document.activeElement && (document.activeElement.tagName === 'INPUT' || document.activeElement.tagName === 'SELECT' || document.activeElement.tagName === 'TEXTAREA');
+    if (!inputFocused) {
+      e.preventDefault();
+      document.getElementById('btnDashboard').click();
+    }
+  }
+});
+</script>
+
+</body>
+</html>

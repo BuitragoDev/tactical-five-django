@@ -1,0 +1,200 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Tactical Five</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="{% static 'css/home.css' %}">
+</head>
+<body>
+
+  <div class="mobile-block">
+    <div class="mobile-block-icon">🖥️</div>
+    <h2>Escritorio requerido</h2>
+    <p>Tactical Five está diseñado para pantallas grandes.<br>
+    Ábrelo desde un ordenador para disfrutar de la experiencia completa.</p>
+  </div>
+
+  <div class="bg-noise"></div>
+  <div class="bg-stripes"></div>
+  <div class="bg-glow-top"></div>
+
+  <div class="wrapper">
+
+  <!-- ── HEADER ─────────────────────────────────── -->
+  <header>
+    <div class="logo-wrap">
+      <div class="logo-icon">TF</div>
+      <div class="logo-text">TACTICAL <span>FIVE</span></div>
+    </div>
+    <div class="header-right">
+      <a class="btn-legal" href="#" onclick="openModal(); return false;">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none"
+             stroke="currentColor" stroke-width="2">
+          <circle cx="12" cy="12" r="10"/>
+          <line x1="12" y1="8"  x2="12"   y2="12"/>
+          <line x1="12" y1="16" x2="12.01" y2="16"/>
+        </svg>
+        Aviso Legal
+      </a>
+    </div>
+  </header>
+
+  <!-- ── HERO ───────────────────────────────────── -->
+  <main class="hero">
+
+    <div class="season-bar">
+      <div class="season-bar-inner">
+        <span class="season-dot"></span>
+        Temporada 2025 &middot; 2026
+      </div>
+    </div>
+
+    <h1 class="hero-title">
+      <span class="line1">Tactical</span>
+      <span class="line2">Five</span>
+    </h1>
+
+    <div class="hero-divider">
+      <div class="hero-divider-line"></div>
+      <div class="hero-divider-text">Elige tu modo de juego</div>
+      <div class="hero-divider-line"></div>
+    </div>
+
+    <!-- ── MENÚ PRINCIPAL ── -->
+    <div class="menu-grid">
+
+      <!-- Liga Manager -->
+      <a href="{% url 'choose_team' %}?mode=manager" class="menu-card card-manager">
+        <div class="card-title">Liga<br>Manager</div>
+        <div class="card-sep"></div>
+        <p class="card-desc">
+          Dirige tu club con estabilidad y visión a largo plazo.
+          Construye un proyecto, gestiona cada temporada y mantente
+          al frente hasta que tú decidas… o la directiva decida por ti.
+        </p>
+        <div class="card-cta">
+          Comenzar
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+            <path d="M5 12h14M12 5l7 7-7 7"/>
+          </svg>
+        </div>
+      </a>
+
+      <!-- Liga ProManager -->
+      <a href="{% url 'choose_team' %}?mode=promanager" class="menu-card card-pro">
+        <div class="card-title">Liga<br>ProManager</div>
+        <div class="card-sep"></div>
+        <p class="card-desc">
+          Empieza desde abajo y haz que tu carrera hable por ti.
+          Tus resultados abrirán nuevas puertas cada temporada:
+          quédate, progresa… o salta a un desafío mayor.
+        </p>
+        <div class="card-cta">
+          Comenzar
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+            <path d="M5 12h14M12 5l7 7-7 7"/>
+          </svg>
+        </div>
+      </a>
+
+      <!-- Editor -->
+      <a href="{% url 'editor' %}" class="menu-card card-editor">
+        <div class="card-title">Editor<br>Base de Datos</div>
+        <div class="card-sep"></div>
+        <p class="card-desc">
+          Edita jugadores, equipos, atributos y estadísticas.
+          Crea tu liga personalizada y ajusta cada detalle
+          antes de empezar tu partida.
+        </p>
+        <div class="card-cta">
+          Abrir
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+            <path d="M5 12h14M12 5l7 7-7 7"/>
+          </svg>
+        </div>
+      </a>
+
+    </div>
+
+    <!-- ── STATS ── -->
+    <div class="stats-strip">
+      <div class="stat-item">
+        <div class="stat-val">30</div>
+        <div class="stat-lbl">Franquicias</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-val"><span class="accent">400+</span></div>
+        <div class="stat-lbl">Jugadores reales</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-val">82</div>
+        <div class="stat-lbl">Partidos / temporada</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-val"><span class="accent">&#8734;</span></div>
+        <div class="stat-lbl">Temporadas</div>
+      </div>
+    </div>
+
+  </main>
+
+  <!-- ── FOOTER ─────────────────────────────────── -->
+  <footer>
+    <div class="version-tag">
+      <div class="version-dot"></div>
+      v0.1.0 &nbsp;&middot;&nbsp; Alpha
+    </div>
+  </footer>
+
+</div>
+
+<!-- ── MODAL AVISO LEGAL ──────────────────────────── -->
+<div class="modal-overlay" id="legalModal" onclick="closeModal(event)">
+  <div class="modal-box">
+    <div class="modal-title">Aviso Legal</div>
+    <div class="modal-body">
+      <p>
+        <strong>Tactical Five</strong> es un videojuego de simulación deportiva
+        desarrollado con fines educativos y de entretenimiento personal.
+      </p>
+      <br>
+      <p>
+        Los nombres de equipos, jugadores y logotipos de la NBA son propiedad
+        de sus respectivos dueños. Tactical Five no está afiliado, patrocinado
+        ni respaldado por la NBA, sus equipos ni sus jugadores.
+      </p>
+      <br>
+      <p>
+        Este proyecto es de uso privado y no tiene carácter comercial.
+        Todos los datos utilizados son de dominio público o uso educativo
+        bajo el principio de <em>fair use</em>.
+      </p>
+      <br>
+      <p style="font-size:16px; color:#c9d3e4;">
+        &copy; 2025 Tactical Five &nbsp;&middot;&nbsp; Todos los derechos reservados
+      </p>
+    </div>
+    <button class="modal-close" onclick="closeModal()">Cerrar</button>
+  </div>
+</div>
+
+<script>
+  function openModal() {
+    document.getElementById('legalModal').classList.add('active');
+  }
+  function closeModal(e) {
+    if (!e || e.target.id === 'legalModal' || e.target.classList.contains('modal-close')) {
+      document.getElementById('legalModal').classList.remove('active');
+    }
+  }
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Escape') closeModal();
+  });
+</script>
+
+</body>
+</html>

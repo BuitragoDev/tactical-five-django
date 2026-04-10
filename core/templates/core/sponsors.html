@@ -1,0 +1,243 @@
+{% load static humanize %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Patrocinadores · Tactical Five</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Roboto+Condensed:wght@300;400;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="{% static 'css/records.css' %}">
+  <style>
+    .contract-cards {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 20px;
+      margin-top: 20px;
+    }
+    .contract-card {
+      background: var(--bg3);
+      border: 2px solid var(--border);
+      border-radius: 8px;
+      padding: 24px;
+      text-align: center;
+      transition: all .2s;
+    }
+    .contract-card:hover {
+      border-color: var(--border2);
+      transform: translateY(-2px);
+    }
+    .contract-card.bronze { border-color: #cd7f32; }
+    .contract-card.bronze:hover { box-shadow: 0 4px 20px rgba(205,127,50,.2); }
+    .contract-card.silver { border-color: #c0c0c0; }
+    .contract-card.silver:hover { box-shadow: 0 4px 20px rgba(192,192,192,.2); }
+    .contract-card.gold { border-color: #ffd700; }
+    .contract-card.gold:hover { box-shadow: 0 4px 20px rgba(255,215,0,.2); }
+    .contract-card.contracted {
+      opacity: 0.7;
+    }
+    .contract-card.contracted::after {
+      content: 'CONTRATADO';
+      display: block;
+      background: var(--gold);
+      color: #000;
+      font-family: 'Oswald', sans-serif;
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 2px;
+      padding: 4px 12px;
+      border-radius: 4px;
+      margin-top: 16px;
+    }
+    .contract-tier {
+      font-family: 'Oswald', sans-serif;
+      font-size: 14px;
+      font-weight: 600;
+      letter-spacing: 3px;
+      text-transform: uppercase;
+      margin-bottom: 8px;
+    }
+    .bronze .contract-tier { color: #cd7f32; }
+    .silver .contract-tier { color: #c0c0c0; }
+    .gold .contract-tier { color: #ffd700; }
+    .contract-name {
+      font-family: 'Oswald', sans-serif;
+      font-size: 22px;
+      font-weight: 700;
+      color: var(--text-lt);
+      margin-bottom: 16px;
+    }
+    .contract-stat {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 8px 0;
+      border-bottom: 1px solid var(--border);
+    }
+    .contract-stat:last-of-type {
+      border-bottom: none;
+    }
+    .contract-stat-label {
+      font-size: 13px;
+      color: var(--text-dim);
+    }
+    .contract-stat-value {
+      font-family: 'Oswald', sans-serif;
+      font-size: 16px;
+      font-weight: 600;
+      color: var(--green);
+    }
+    .btn-contract {
+      display: inline-block;
+      margin-top: 20px;
+      padding: 12px 32px;
+      background: var(--gold);
+      color: #000;
+      font-family: 'Oswald', sans-serif;
+      font-size: 14px;
+      font-weight: 600;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      transition: all .15s;
+    }
+    .btn-contract:hover {
+      background: var(--gold-lt);
+      transform: scale(1.05);
+    }
+    .btn-contract:disabled {
+      background: var(--border2);
+      color: var(--text-dim);
+      cursor: not-allowed;
+      transform: none;
+    }
+    .contract-note {
+      text-align: center;
+      color: var(--text-dim);
+      font-size: 14px;
+      margin-top: 20px;
+      padding: 12px;
+      background: rgba(212,160,23,.05);
+      border: 1px solid rgba(212,160,23,.2);
+      border-radius: 4px;
+    }
+    .current-contract {
+      background: var(--bg3);
+      border: 1px solid var(--gold);
+      border-radius: 8px;
+      padding: 20px;
+      margin-bottom: 24px;
+    }
+    .current-contract h3 {
+      font-family: 'Oswald', sans-serif;
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--gold);
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      margin-bottom: 12px;
+    }
+    .current-contract p {
+      color: var(--text-dim);
+      font-size: 14px;
+    }
+    .current-contract strong {
+      color: var(--text-lt);
+    }
+  </style>
+</head>
+<body>
+
+<div class="bg-noise"></div>
+<div class="bg-stripes"></div>
+
+<div class="app">
+
+  {% include 'core/sidebar.html' with sidebar_page='sponsors' %}
+
+  <form method="post" action="{% url 'advance_day' %}" id="advanceForm" style="display:none;">
+    {% csrf_token %}
+  </form>
+  <form method="post" action="{% url 'reset_game' %}" id="resetForm" style="display:none;">
+    {% csrf_token %}
+  </form>
+
+  <div class="main">
+    {% include 'core/header.html' %}
+
+    <div class="content">
+      <div class="panel panel-records">
+        <div class="panel-title-row">
+          <div class="panel-title">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+            Patrocinadores
+          </div>
+        </div>
+
+        {% if current_sponsor %}
+        <div class="current-contract">
+          <h3>Contrato Actual</h3>
+          <p>Patrocinador: <strong>{{ current_sponsor.name }}</strong></p>
+        </div>
+        {% endif %}
+
+        <div class="contract-cards">
+          {% for s in sponsors %}
+          <div class="contract-card{% if current_sponsor and current_sponsor.id == s.id %} contracted{% endif %}">
+            <div class="contract-name">{{ s.name }}</div>
+            
+            <div class="contract-stat">
+              <span class="contract-stat-label">Ingreso Inicial</span>
+              <span class="contract-stat-value">${{ s.initial_income|default:0|intcomma }}</span>
+            </div>
+            <div class="contract-stat">
+              <span class="contract-stat-label">Por Partido en Casa</span>
+              <span class="contract-stat-value">${{ s.home_game_income|default:0|intcomma }}</span>
+            </div>
+            <div class="contract-stat">
+              <span class="contract-stat-label">Duración</span>
+              <span class="contract-stat-value">{{ s.contract_years }} año{% if s.contract_years > 1 %}s{% endif %}</span>
+            </div>
+            
+            {% if can_hire and not current_sponsor %}
+            <form method="post">
+              {% csrf_token %}
+              <input type="hidden" name="sponsor_id" value="{{ s.id }}">
+              <button type="submit" class="btn-contract">Contratar</button>
+            </form>
+            {% endif %}
+          </div>
+          {% endfor %}
+        </div>
+
+        {% if not can_hire %}
+        <div class="contract-note">
+          {% if current_sponsor %}
+          Ya tienes un patrocinador contratado para esta temporada.
+          {% else %}
+          Los contratos de patrocinio solo se pueden contratar durante el mes de octubre.
+          {% endif %}
+        </div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+document.getElementById('btnAdvance')?.addEventListener('click', function() {
+  document.getElementById('advanceForm').submit();
+});
+document.getElementById('btnReset')?.addEventListener('click', function(e) {
+  e.preventDefault();
+  if (confirm('¿Seguro que quieres reiniciar la partida? Se perderán todos los datos.')) {
+    document.getElementById('resetForm').submit();
+  }
+});
+</script>
+
+</body>
+</html>

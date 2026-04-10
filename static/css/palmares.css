@@ -1,0 +1,256 @@
+/* ═══════════════════════════════════════════
+   PALMARES STYLES
+   ═══════════════════════════════════════════ */
+
+/* Override dashboard grid */
+.content {
+  display: block !important;
+  grid-template-columns: none !important;
+  grid-template-rows: none !important;
+  gap: 0 !important;
+  padding: 24px 28px !important;
+}
+
+.palmares-container {
+  max-width: 1400px;
+  margin: 0 auto;
+}
+.palmares-header {
+  text-align: center;
+  margin-bottom: 24px;
+}
+.palmares-header h1 {
+  font-family: 'Oswald', sans-serif;
+  font-size: 32px;
+  font-weight: 700;
+  letter-spacing: 4px;
+  text-transform: uppercase;
+  color: var(--text-lt);
+}
+
+/* Tabs */
+.tabs-bar {
+  display: flex;
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  margin-bottom: 24px;
+}
+.tab-btn {
+  background: none;
+  border: none;
+  color: var(--text-dim);
+  font-family: 'Oswald', sans-serif;
+  font-size: 14px;
+  font-weight: 500;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  padding: 12px 24px;
+  cursor: pointer;
+  transition: all .15s;
+}
+.tab-btn:hover { color: var(--text); }
+.tab-btn.active {
+  color: var(--gold);
+  background: rgba(212,160,23,.08);
+  border-bottom: 2px solid var(--gold);
+}
+
+/* Tab panels */
+.tab-panel { display: none; }
+.tab-panel.active { display: block; }
+
+/* Split layout */
+.palmares-split {
+  display: flex;
+  gap: 24px;
+}
+.palmares-left {
+  flex: 0 0 320px;
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  padding: 16px;
+  max-height: calc(100vh - 200px);
+  overflow-y: auto;
+}
+.palmares-right {
+  flex: 1;
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  padding: 16px;
+  max-height: calc(100vh - 200px);
+  overflow-y: auto;
+}
+
+.palmares-section-title {
+  font-family: 'Oswald', sans-serif;
+  font-size: 15px;
+  font-weight: 600;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--gold);
+  margin-bottom: 16px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--border);
+}
+
+/* Champs list */
+.champs-list {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.champ-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 10px;
+  background: var(--bg3);
+  border: 1px solid transparent;
+  transition: border-color .15s;
+}
+.champ-row:hover {
+  border-color: var(--border2);
+}
+.champ-rank {
+  font-family: 'Oswald', sans-serif;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-dim);
+  min-width: 20px;
+  text-align: center;
+}
+.champ-logo {
+  width: 24px;
+  height: 24px;
+  object-fit: contain;
+}
+.champ-name {
+  flex: 1;
+  font-size: 13px;
+  font-weight: 400;
+  color: var(--text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.champ-count {
+  font-family: 'Oswald', sans-serif;
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--gold);
+  min-width: 24px;
+  text-align: center;
+}
+
+/* Table */
+.palmares-table {
+  width: 100%;
+  border-collapse: collapse;
+  table-layout: fixed;
+}
+.palmares-table thead th {
+  font-family: 'Oswald', sans-serif;
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: var(--text-dim);
+  padding: 8px 12px;
+  border-bottom: 1px solid var(--border);
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+/* Teams tab table */
+#tab-teams .palmares-table thead th:nth-child(1) { text-align: left; width: 120px; }
+#tab-teams .palmares-table thead th:nth-child(2) { text-align: left; }
+#tab-teams .palmares-table thead th:nth-child(3) { text-align: left; }
+#tab-teams .palmares-table thead th:nth-child(4) { text-align: center; width: 120px; }
+#tab-teams .palmares-table thead th:nth-child(5) { text-align: left; }
+#tab-teams .palmares-table tbody td:nth-child(1) { text-align: left; }
+#tab-teams .palmares-table tbody td:nth-child(2) { text-align: left; }
+#tab-teams .palmares-table tbody td:nth-child(3) { text-align: left; }
+#tab-teams .palmares-table tbody td:nth-child(4) { text-align: center; }
+#tab-teams .palmares-table tbody td:nth-child(5) { text-align: left; }
+
+/* Players tab table */
+#tab-players .palmares-table thead th:nth-child(1) { text-align: center; width: 120px; }
+#tab-players .palmares-table thead th:nth-child(2) { text-align: left; }
+#tab-players .palmares-table thead th:nth-child(3) { text-align: center; width: 120px; }
+#tab-players .palmares-table thead th:nth-child(4) { text-align: left; }
+#tab-players .palmares-table thead th:nth-child(5) { text-align: center; width: 120px; }
+#tab-players .palmares-table tbody td:nth-child(1) { text-align: center; }
+#tab-players .palmares-table tbody td:nth-child(2) { text-align: left; }
+#tab-players .palmares-table tbody td:nth-child(3) { text-align: center; }
+#tab-players .palmares-table tbody td:nth-child(4) { text-align: left; }
+#tab-players .palmares-table tbody td:nth-child(5) { text-align: center; }
+/* Quintets tab table */
+#tab-quintets .palmares-table thead th:nth-child(1) { text-align: center; width: 120px; }
+#tab-quintets .palmares-table thead th:nth-child(n+2) { text-align: left; }
+#tab-quintets .palmares-table tbody td:nth-child(1) { text-align: center; }
+#tab-quintets .palmares-table tbody td:nth-child(n+2) { text-align: left; }
+.quintet-cell {
+  white-space: normal;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.quintet-cell .mini-logo {
+  vertical-align: middle;
+  margin-right: 6px;
+}
+.palmares-table tbody td {
+  padding: 10px 12px;
+  font-size: 13px;
+  font-family: 'Roboto Condensed', sans-serif;
+  color: var(--text);
+  border-bottom: 1px solid var(--border);
+  vertical-align: middle;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.palmares-table tbody tr:hover {
+  background: rgba(255,255,255,.02);
+}
+.season-cell {
+  font-family: 'Oswald', sans-serif;
+  font-weight: 500;
+  color: var(--text-dim);
+  letter-spacing: 1px;
+  white-space: nowrap;
+}
+.champ-cell, .finalist-cell, .mvp-cell, .rookie-cell {
+  white-space: normal;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.champ-cell .mini-logo, .finalist-cell .mini-logo,
+.mvp-cell .mini-logo, .rookie-cell .mini-logo {
+  vertical-align: middle;
+  margin-right: 6px;
+}
+.mini-logo {
+  width: 18px;
+  height: 18px;
+  object-fit: contain;
+  flex-shrink: 0;
+  display: inline-block;
+}
+.result-cell {
+  font-family: 'Oswald', sans-serif;
+  font-weight: 600;
+  color: var(--gold);
+  text-align: center;
+  white-space: nowrap;
+}
+.rating-cell {
+  font-family: 'Oswald', sans-serif;
+  font-weight: 500;
+  color: var(--text-dim);
+  text-align: center;
+  white-space: nowrap;
+}
+.no-data, .no-data-cell {
+  text-align: center;
+  color: var(--text-dim);
+  font-style: italic;
+  padding: 24px;
+}

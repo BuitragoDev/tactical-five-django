@@ -1,0 +1,173 @@
+{% load static humanize calendar_tags %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Calendario · Tactical Five</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="{% static 'css/calendar.css' %}">
+</head>
+<body>
+
+<div class="bg-noise"></div>
+<div class="bg-stripes"></div>
+
+<div class="app">
+
+  {% include 'core/sidebar.html' with sidebar_page='calendar' %}
+
+<form method="post" action="{% url 'advance_day' %}" id="advanceForm" style="display:none;">
+  {% csrf_token %}
+</form>
+<form method="post" action="{% url 'reset_game' %}" id="resetForm" style="display:none;">
+  {% csrf_token %}
+</form>
+
+
+  <!-- ═══════════ MAIN ═══════════ -->
+  <div class="main">
+
+    {% include 'core/header.html' %}
+
+    <!-- Contenido -->
+    <div class="content">
+
+      <!-- Calendario -->
+      <div class="panel panel-calendar">
+        <div class="calendar-header">
+          <a href="{{ prev_month_url }}" class="cal-nav-btn">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M15 19l-7-7 7-7"/></svg>
+          </a>
+          <div class="cal-month-title">{{ month_name }} {{ year }}</div>
+          <a href="{{ next_month_url }}" class="cal-nav-btn">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M9 5l7 7-7 7"/></svg>
+          </a>
+        </div>
+
+        <div class="cal-weekdays">
+          {% for day_name in day_names %}
+          <div class="cal-weekday">{{ day_name }}</div>
+          {% endfor %}
+        </div>
+
+        <div class="cal-grid">
+          {% for week in month_days %}
+          {% for day in week %}
+          {% if day == 0 %}
+          <div class="cal-day empty"></div>
+          {% else %}
+          {% with date_str=dates_by_day|get_item:day %}
+          <div class="cal-day{% if date_str == selected_date %} selected{% endif %}" data-date="{{ date_str }}">
+            <span class="cal-day-num">{{ day }}</span>
+            {% if date_str in games_by_date_flags %}
+            <img src="{% static games_by_date_flags|get_item:date_str %}" alt="" class="cal-game-logo">
+            {% else %}
+            <svg class="cal-no-game-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>
+            {% endif %}
+          </div>
+          {% endwith %}
+          {% endif %}
+          {% endfor %}
+          {% endfor %}
+        </div>
+      </div>
+
+      <!-- Panel detalle -->
+      <div class="panel panel-detail">
+        <div class="detail-title">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>
+          Detalle del Día
+        </div>
+
+        {% if selected_games %}
+        {% for game in selected_games %}
+        <div class="game-detail-card">
+          <div class="game-detail-header">
+            <span class="game-detail-competition">NBA · Temporada Regular</span>
+            <span class="game-detail-date">{{ game.game_date|date:"d/m/Y" }}</span>
+          </div>
+
+          <div class="game-detail-body">
+            <div class="game-detail-team">
+              {% if game.home_team.logo %}
+              <img src="{% static game.home_team.logo %}" alt="{{ game.home_team.name }}" class="game-detail-logo">
+              {% endif %}
+              <span class="game-detail-team-name">{{ game.home_team.name }}</span>
+            </div>
+
+            <div class="game-detail-vs">
+              {% if game.is_played %}
+              <div class="game-detail-score">
+                <span class="game-detail-score-home">{{ game.home_score }}</span>
+                <span class="game-detail-score-sep">-</span>
+                <span class="game-detail-score-away">{{ game.away_score }}</span>
+              </div>
+              {% else %}
+              <span class="game-detail-vs-text">VS</span>
+              {% endif %}
+            </div>
+
+            <div class="game-detail-team">
+              {% if game.away_team.logo %}
+              <img src="{% static game.away_team.logo %}" alt="{{ game.away_team.name }}" class="game-detail-logo">
+              {% endif %}
+              <span class="game-detail-team-name">{{ game.away_team.name }}</span>
+            </div>
+          </div>
+
+          <div class="game-detail-footer">
+            <div class="game-detail-venue">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 21h18M3 7v14M21 7v14M6 11h4M6 15h4M14 11h4M14 15h4M9 21V11h6v10M12 3L3 7h18L12 3z"/></svg>
+              <span>{{ game.home_team.arena }}</span>
+            </div>
+            {% if game.home_team_id == team.pk %}
+            <span class="game-detail-location location-home">Casa</span>
+            {% else %}
+            <span class="game-detail-location location-away">Fuera</span>
+            {% endif %}
+          </div>
+        </div>
+        {% endfor %}
+        {% else %}
+        <div class="no-games-detail">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+            <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
+            <path d="M16 2v4M8 2v4M3 10h18"/>
+            <path d="M8 14h.01M12 14h.01M16 14h.01M8 18h.01M12 18h.01"/>
+          </svg>
+          <p>No hay partidos de <strong>{{ team.name }}</strong> este día</p>
+        </div>
+        {% endif %}
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<script>
+const GAMES_BY_DATE = {{ games_by_date_json|safe }};
+const TEAM_ID = {{ team.pk }};
+
+document.querySelectorAll('.cal-day:not(.empty)').forEach(dayEl => {
+  dayEl.addEventListener('click', function() {
+    const dateStr = this.dataset.date;
+    window.location.href = '?date=' + dateStr;
+  });
+});
+
+document.getElementById('btnAdvance').addEventListener('click', function() {
+  document.getElementById('advanceForm').submit();
+});
+
+document.getElementById('btnReset').addEventListener('click', function(e) {
+  e.preventDefault();
+  if (confirm('¿Seguro que quieres reiniciar la partida? Se perderán todos los datos.')) {
+    document.getElementById('resetForm').submit();
+  }
+});
+</script>
+
+</body>
+</html>

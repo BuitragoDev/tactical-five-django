@@ -1,0 +1,94 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Despido · Tactical Five</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Roboto+Condensed:wght@300;400;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="{% static 'css/dismissal.css' %}">
+</head>
+<body>
+
+<div class="bg-noise"></div>
+<div class="bg-stripes"></div>
+
+{% if game_mode == 'manager' %}
+<form method="post" action="{% url 'reset_game' %}" id="resetForm" style="display:none;">
+  {% csrf_token %}
+</form>
+{% endif %}
+
+<div class="dismissal-overlay" id="dismissalOverlay">
+  <div class="dismissal-modal">
+    <div class="dismissal-icon">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <circle cx="12" cy="12" r="10"/>
+        <line x1="15" y1="9" x2="9" y2="15"/>
+        <line x1="9" y1="9" x2="15" y2="15"/>
+      </svg>
+    </div>
+    
+    <h1 class="dismissal-title">DESPEDIDO</h1>
+    
+    <p class="dismissal-reason">{{ dismissal_reason }}</p>
+    
+    <div class="dismissal-stats">
+      <div class="stat-item">
+        <span class="stat-label">Confianza</span>
+        <div class="stat-bar">
+          <div class="stat-fill {% if dismissal_trust >= 50 %}good{% elif dismissal_trust >= 25 %}medium{% else %}bad{% endif %}" 
+               style="width: {{ dismissal_trust }}%"></div>
+        </div>
+        <span class="stat-value">{{ dismissal_trust }}%</span>
+      </div>
+      <div class="stat-item">
+        <span class="stat-label">Moral</span>
+        <div class="stat-bar">
+          <div class="stat-fill {% if dismissal_morale >= 50 %}good{% elif dismissal_morale >= 25 %}medium{% else %}bad{% endif %}" 
+               style="width: {{ dismissal_morale }}%"></div>
+        </div>
+        <span class="stat-value">{{ dismissal_morale }}%</span>
+      </div>
+      <div class="stat-item">
+        <span class="stat-label">Confianza Prensa</span>
+        <div class="stat-bar">
+          <div class="stat-fill {% if dismissal_pressure >= 50 %}good{% elif dismissal_pressure >= 25 %}medium{% else %}bad{% endif %}" 
+               style="width: {{ dismissal_pressure }}%"></div>
+        </div>
+        <span class="stat-value">{{ dismissal_pressure }}%</span>
+      </div>
+    </div>
+    
+    {% if game_mode == 'manager' %}
+    <p class="dismissal-note">Tu carrera como manager ha terminado.</p>
+    <button class="btn-dismissal" id="btnRestart">REINICIAR PARTIDA</button>
+    <script>
+      document.getElementById('btnRestart').addEventListener('click', function() {
+        document.getElementById('resetForm').submit();
+      });
+    </script>
+    {% else %}
+    <p class="dismissal-note">Tu carrera en este equipo ha terminado.</p>
+    <button class="btn-dismissal" id="btnClose">CERRAR</button>
+    <script>
+      document.getElementById('btnClose').addEventListener('click', function() {
+        fetch('{% url "dismissal_acknowledge" %}', {
+          method: 'POST',
+          headers: {
+            'X-CSRFToken': '{{ csrf_token }}',
+            'Content-Type': 'application/json',
+          },
+        }).then(function() {
+          window.location.href = '{% url "dashboard" %}';
+        });
+      });
+    </script>
+    {% endif %}
+  </div>
+</div>
+
+</body>
+</html>

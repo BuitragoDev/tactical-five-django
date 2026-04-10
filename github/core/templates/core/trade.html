@@ -1,0 +1,429 @@
+{% load static humanize roster_tags %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Mercado · Tactical Five</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Roboto+Condensed:wght@300;400;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="{% static 'css/trade.css' %}">
+</head>
+<body>
+
+<div class="bg-noise"></div>
+<div class="bg-stripes"></div>
+
+<div class="app">
+
+  {% include 'core/sidebar.html' with sidebar_page='trade' %}
+
+  <div class="main">
+    {% include 'core/header.html' %}
+
+    <div class="content">
+
+      <!-- Team Selection -->
+      <div class="trade-section">
+        <div class="section-title">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.3 5.2a1 1 0 00.9 1.8h12.6M17 17v4m-4 0h4"/></svg>
+          Selecciona un equipo para negociar
+        </div>
+        <div class="team-list">
+          {% for t in other_teams %}
+          <a href="?team={{ t.pk }}" class="team-chip {% if selected_team and selected_team.pk == t.pk %}active{% endif %}">
+            {% if t.logo %}
+            <img src="{% static t.logo %}" alt="{{ t.name }}" class="team-chip-logo" title="{{ t.name }}">
+            {% endif %}
+          </a>
+          {% endfor %}
+          <a href="?team=fa" class="team-chip {% if selected_team == 'fa' %}active{% endif %}">
+            <div class="team-chip-fa">FA</div>
+          </a>
+        </div>
+      </div>
+
+      {% if selected_team and not is_fa %}
+      <!-- Negotiate Button -->
+      <button class="btn-negotiate" id="btnNegotiate">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/></svg>
+        Negociar con {{ selected_team.name }}
+      </button>
+
+      <!-- Trade Panels (hidden initially) -->
+      <div class="trade-panels" id="tradePanels" style="display:none;">
+        <form method="post" action="/trade/submit/" id="tradeForm">
+          {% csrf_token %}
+          <input type="hidden" name="other_team_id" value="{{ selected_team.pk }}">
+
+          <div class="trade-panels-grid">
+            <!-- My Team Panel -->
+            <div class="trade-panel">
+              <div class="trade-panel-header">
+                {% if team.logo %}
+                <img src="{% static team.logo %}" alt="{{ team.name }}" class="trade-panel-logo">
+                {% endif %}
+                <span class="trade-panel-name">{{ team.name }}</span>
+              </div>
+              <div class="trade-panel-body">
+                <table class="trade-table">
+                  <thead>
+                    <tr>
+                      <th class="col-select"></th>
+                      <th class="col-name">Jugador</th>
+                      <th class="col-pos">Pos</th>
+                      <th class="col-ovr">OVR</th>
+                      <th class="col-salary">Salario</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {% for p in my_players %}
+                    <tr class="trade-player-row" data-player-id="{{ p.pk }}" data-salary="{{ p.salary }}">
+                      <td class="col-select">
+                        <input type="checkbox" name="my_player_ids" value="{{ p.pk }}" class="trade-checkbox" data-side="my">
+                      </td>
+                      <td class="col-name">{{ p.full_name }}</td>
+                      <td class="col-pos">{{ p.position }}</td>
+                      <td class="col-ovr">{{ p.overall }}</td>
+                      <td class="col-salary">${{ p.salary|floatformat:0|intcomma }}</td>
+                    </tr>
+                    {% endfor %}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            <!-- Other Team Panel -->
+            <div class="trade-panel">
+              <div class="trade-panel-header">
+                {% if selected_team.logo %}
+                <img src="{% static selected_team.logo %}" alt="{{ selected_team.name }}" class="trade-panel-logo">
+                {% endif %}
+                <span class="trade-panel-name">{{ selected_team.name }}</span>
+              </div>
+              <div class="trade-panel-body">
+                <table class="trade-table">
+                  <thead>
+                    <tr>
+                      <th class="col-select"></th>
+                      <th class="col-name">Jugador</th>
+                      <th class="col-pos">Pos</th>
+                      <th class="col-ovr">OVR</th>
+                      <th class="col-salary">Salario</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {% for p in other_players %}
+                    <tr class="trade-player-row" data-player-id="{{ p.pk }}" data-salary="{{ p.salary }}">
+                      <td class="col-select">
+                        <input type="checkbox" name="other_player_ids" value="{{ p.pk }}" class="trade-checkbox" data-side="other">
+                      </td>
+                      <td class="col-name">{{ p.full_name }}</td>
+                      <td class="col-pos">{{ p.position }}</td>
+                      <td class="col-ovr">{{ p.overall }}</td>
+                      <td class="col-salary">${{ p.salary|floatformat:0|intcomma }}</td>
+                    </tr>
+                    {% endfor %}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+
+          <!-- Trade Summary -->
+          <div class="trade-summary" id="tradeSummary">
+            <div class="summary-title">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
+              Resumen de Oferta
+            </div>
+            <div class="summary-grid">
+              <div class="summary-col">
+                <div class="summary-team">{{ team.name }}</div>
+                <div class="summary-row">
+                  <span class="summary-label">Jugadores después</span>
+                  <span class="summary-value" id="myPlayerCount">{{ team.players.count }}</span>
+                </div>
+                <div class="summary-row">
+                  <span class="summary-label">Margen salarial</span>
+                  <span class="summary-value {% if my_salary_margin >= 0 %}positive{% else %}negative{% endif %}" id="mySalaryMargin">${{ my_salary_margin|floatformat:0|intcomma }}</span>
+                </div>
+                <div class="summary-row">
+                  <span class="summary-label">Salario enviado</span>
+                  <span class="summary-value negative" id="mySalaryOut">$0</span>
+                </div>
+                <div class="summary-row">
+                  <span class="summary-label">Salario recibido</span>
+                  <span class="summary-value positive" id="mySalaryIn">$0</span>
+                </div>
+              </div>
+              <div class="summary-col">
+                <div class="summary-team">{{ selected_team.name }}</div>
+                <div class="summary-row">
+                  <span class="summary-label">Jugadores después</span>
+                  <span class="summary-value" id="otherPlayerCount">{{ selected_team.players.count }}</span>
+                </div>
+                <div class="summary-row">
+                  <span class="summary-label">Margen salarial</span>
+                  <span class="summary-value {% if other_salary_margin >= 0 %}positive{% else %}negative{% endif %}" id="otherSalaryMargin">${{ other_salary_margin|floatformat:0|intcomma }}</span>
+                </div>
+                <div class="summary-row">
+                  <span class="summary-label">Salario enviado</span>
+                  <span class="summary-value negative" id="otherSalaryOut">$0</span>
+                </div>
+                <div class="summary-row">
+                  <span class="summary-label">Salario recibido</span>
+                  <span class="summary-value positive" id="otherSalaryIn">$0</span>
+                </div>
+              </div>
+            </div>
+            <div id="tradeStatus"></div>
+          </div>
+        </form>
+      </div>
+      {% endif %}
+
+      {% if is_fa %}
+      <!-- Free Agents Panel -->
+      <div class="trade-panels">
+        <div class="trade-panel" style="grid-column: 1 / -1;">
+          <div class="trade-panel-header">
+            <span class="trade-panel-name">Agentes Libres</span>
+          </div>
+          <div class="trade-panel-body-fa">
+            {% if fa_players %}
+            <table class="trade-table">
+              <thead>
+                <tr>
+                  <th class="col-name">Jugador</th>
+                  <th class="col-pos">Pos</th>
+                  <th class="col-ovr">OVR</th>
+                  <th class="col-salary">Salario</th>
+                  <th class="col-action"></th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for p in fa_players %}
+                <tr class="fa-row">
+                  <td class="col-name">{{ p.full_name }}</td>
+                  <td class="col-pos">{{ p.position }}</td>
+                  <td class="col-ovr">{{ p.overall }}</td>
+                  <td class="col-salary">${{ p.salary|floatformat:0|intcomma }}</td>
+                  <td class="col-action">
+                    <button type="button" class="btn-fa-sign" onclick="handleFAClick({{ p.pk }}, '{{ p.full_name|escapejs }}', {{ p.salary }}, {{ p.age }}, {{ roster_count }})">FIRMAR</button>
+                  </td>
+                </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+            {% else %}
+            <div class="empty-fa">No hay agentes libres disponibles</div>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+      {% endif %}
+
+    </div>
+  </div>
+</div>
+
+<!-- FA Roster Full Modal -->
+<div class="dismiss-modal" id="faRosterFullModal">
+  <div class="dismiss-modal-content">
+    <div class="dismiss-modal-header" style="color: var(--red);">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M15 9l-6 6M9 9l6 6"/></svg>
+      <span>Plantilla Completa</span>
+    </div>
+    <div class="dismiss-modal-body">
+      <p>No puedes fichar más jugadores. Tu plantilla ya tiene el máximo de <strong>15 jugadores</strong>.</p>
+      <p>Debes liberar plazas antes de poder fichar.</p>
+    </div>
+    <div class="dismiss-modal-footer">
+      <button class="btn-dismiss-confirm" onclick="closeFARosterFullModal()" style="background: var(--red);">Entendido</button>
+    </div>
+  </div>
+</div>
+
+<!-- FA Confirm Modal -->
+<div class="dismiss-modal" id="faModal">
+  <div class="dismiss-modal-content">
+    <div class="dismiss-modal-header" style="color: var(--green);">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/></svg>
+      <span>Confirmar Fichaje</span>
+    </div>
+    <div class="dismiss-modal-body">
+      <p>Vas a fichar a <strong id="faPlayerName"></strong></p>
+      <p>Salario: <strong id="faNewSalary"></strong>/año</p>
+      <p>Contrato: <strong id="faYears"></strong></p>
+    </div>
+    <div class="dismiss-modal-footer">
+      <button class="btn-dismiss-cancel" onclick="closeFAModal()">Cancelar</button>
+      <form method="post" action="{% url 'fa_offer' %}" id="faForm">
+        {% csrf_token %}
+        <input type="hidden" name="player_id" id="faPlayerId">
+        <button type="submit" class="btn-dismiss-confirm" style="background: var(--green);">Aceptar</button>
+      </form>
+    </div>
+  </div>
+</div>
+
+<script>
+// --- Free Agent Functions ---
+function handleFAClick(playerId, playerName, salary, age, rosterCount) {
+  if (rosterCount >= 15) {
+    document.getElementById('faRosterFullModal').classList.add('show');
+    return;
+  }
+  openFAModal(playerId, playerName, salary, age);
+}
+
+function openFAModal(playerId, playerName, salary, age) {
+  var newSalary = salary + 2000000;
+  var years;
+  if (age > 35) years = 1;
+  else if (age > 32) years = 2;
+  else if (age > 28) years = 3;
+  else if (age > 25) years = 4;
+  else years = 5;
+
+  document.getElementById('faPlayerId').value = playerId;
+  document.getElementById('faPlayerName').textContent = playerName;
+  document.getElementById('faNewSalary').textContent = '$' + newSalary.toLocaleString('es-ES');
+  document.getElementById('faYears').textContent = years + ' año' + (years > 1 ? 's' : '');
+  document.getElementById('faModal').classList.add('show');
+}
+
+function closeFAModal() {
+  document.getElementById('faModal').classList.remove('show');
+}
+
+function closeFARosterFullModal() {
+  document.getElementById('faRosterFullModal').classList.remove('show');
+}
+
+// --- Trade Negotiation ---
+document.addEventListener('DOMContentLoaded', function() {
+  var btnNegotiate = document.getElementById('btnNegotiate');
+  if (btnNegotiate) {
+    btnNegotiate.addEventListener('click', function() {
+      document.getElementById('tradePanels').style.display = 'block';
+      this.style.display = 'none';
+    });
+  }
+
+  document.querySelectorAll('.trade-checkbox').forEach(function(cb) {
+    cb.addEventListener('change', function() {
+      updateSummary();
+      checkTradeStatus();
+    });
+  });
+
+  var btnReset = document.getElementById('btnReset');
+  if (btnReset) {
+    btnReset.addEventListener('click', function(e) {
+      e.preventDefault();
+      if (confirm('¿Seguro que quieres reiniciar la partida? Se perderán todos los datos.')) {
+        document.getElementById('resetForm').submit();
+      }
+    });
+  }
+});
+
+function updateSummary() {
+  if (!document.getElementById('myPlayerCount')) return;
+  var myChecks = document.querySelectorAll('input[name="my_player_ids"]:checked');
+  var otherChecks = document.querySelectorAll('input[name="other_player_ids"]:checked');
+
+  var mySalaryOut = 0, otherSalaryOut = 0;
+  myChecks.forEach(function(cb) { mySalaryOut += parseInt(cb.closest('tr').dataset.salary) || 0; });
+  otherChecks.forEach(function(cb) { otherSalaryOut += parseInt(cb.closest('tr').dataset.salary) || 0; });
+
+  var myBaseCount = {{ team.players.count }};
+  var otherBaseCount = {{ roster_count }};
+  var myBaseMargin = {{ my_salary_margin }};
+  var otherBaseMargin = 0;
+
+  var myAfter = myBaseCount - myChecks.length + otherChecks.length;
+  var otherAfter = otherBaseCount - otherChecks.length + myChecks.length;
+  var myNewMargin = myBaseMargin + mySalaryOut - otherSalaryOut;
+  var otherNewMargin = otherBaseMargin + otherSalaryOut - mySalaryOut;
+
+  document.getElementById('myPlayerCount').textContent = myAfter;
+  document.getElementById('otherPlayerCount').textContent = otherAfter;
+  document.getElementById('mySalaryOut').textContent = '$' + mySalaryOut.toLocaleString('es-ES');
+  document.getElementById('mySalaryIn').textContent = '$' + otherSalaryOut.toLocaleString('es-ES');
+  document.getElementById('otherSalaryOut').textContent = '$' + otherSalaryOut.toLocaleString('es-ES');
+  document.getElementById('otherSalaryIn').textContent = '$' + mySalaryOut.toLocaleString('es-ES');
+
+  var myMarginEl = document.getElementById('mySalaryMargin');
+  myMarginEl.textContent = '$' + myNewMargin.toLocaleString('es-ES');
+  myMarginEl.className = 'summary-value ' + (myNewMargin >= 0 ? 'positive' : 'negative');
+
+  var otherMarginEl = document.getElementById('otherSalaryMargin');
+  otherMarginEl.textContent = '$' + otherNewMargin.toLocaleString('es-ES');
+  otherMarginEl.className = 'summary-value ' + (otherNewMargin >= 0 ? 'positive' : 'negative');
+}
+
+function checkTradeStatus() {
+  var myChecks = document.querySelectorAll('input[name="my_player_ids"]:checked');
+  var otherChecks = document.querySelectorAll('input[name="other_player_ids"]:checked');
+
+  if (myChecks.length === 0 && otherChecks.length === 0) {
+    document.getElementById('tradeStatus').innerHTML = '';
+    return;
+  }
+
+  var url = new URL('/trade/check/', window.location.origin);
+  url.searchParams.set('team', '{{ selected_team.pk }}');
+  myChecks.forEach(function(cb) { url.searchParams.append('my_player_ids', cb.value); });
+  otherChecks.forEach(function(cb) { url.searchParams.append('other_player_ids', cb.value); });
+
+  fetch(url.toString())
+    .then(function(r) { return r.json(); })
+    .then(function(data) {
+      var statusEl = document.getElementById('tradeStatus');
+      if (data.status === 'empty') {
+        statusEl.innerHTML = '';
+      } else if (data.status === 'invalid') {
+        var html = '<div class="trade-status trade-status-invalid">';
+        html += '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M15 9l-6 6M9 9l6 6"/></svg>';
+        html += '<div><span class="trade-status-title">Oferta no válida</span>';
+        html += '<ul class="trade-status-errors">';
+        data.errors.forEach(function(e) { html += '<li>' + e + '</li>'; });
+        html += '</ul></div></div>';
+        statusEl.innerHTML = html;
+      } else if (data.status === 'valid') {
+        if (data.would_accept) {
+          var html = '<div class="trade-status trade-status-valid">';
+          html += '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 11-5.93-9.14"/><path d="M22 4L12 14.01l-3-3"/></svg>';
+          html += '<div><span class="trade-status-title">El equipo aceptará esta oferta</span>';
+          html += '<span class="trade-status-score">Probabilidad: ' + data.accept_score + '%</span></div>';
+          html += '<button type="submit" form="tradeForm" class="btn-confirm-trade">Confirmar Traspaso</button>';
+          html += '</div>';
+          statusEl.innerHTML = html;
+        } else {
+          var html = '<div class="trade-status trade-status-rejected">';
+          html += '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"/></svg>';
+          html += '<div><span class="trade-status-title">El equipo no va a aceptar esta oferta</span>';
+          html += '<span class="trade-status-score">Probabilidad: ' + data.accept_score + '%</span></div>';
+          html += '</div>';
+          statusEl.innerHTML = html;
+        }
+      }
+    })
+    .catch(function(err) {
+      console.error('Fetch error:', err);
+    });
+}
+</script>
+
+<script>
+document.getElementById('btnAdvance')?.addEventListener('click', function(e) {
+  if (this.tagName === 'A') return;
+  document.getElementById('advanceForm').submit();
+});
+</script>
+
+</body>
+</html>

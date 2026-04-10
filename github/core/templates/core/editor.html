@@ -1,0 +1,661 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Editor · Tactical Five</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Roboto+Condensed:wght@300;400;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="{% static 'css/editor.css' %}">
+</head>
+<body>
+
+  <div class="mobile-block">
+    <div class="mobile-block-icon">&#x1F5A5;&#xFE0F;</div>
+    <h2>Escritorio requerido</h2>
+    <p>Tactical Five est&#225; dise&#241;ado para pantallas grandes.<br>
+    &#193;brelo desde un ordenador para disfrutar de la experiencia completa.</p>
+  </div>
+
+  <div class="bg-noise"></div>
+  <div class="bg-stripes"></div>
+
+  <div class="wrapper">
+
+    <!-- HEADER -->
+    <header>
+      <div class="logo-wrap">
+        <a href="{% url 'home' %}" class="logo-icon">TF</a>
+        <div class="logo-text">EDITOR <span>BASE DE DATOS</span></div>
+      </div>
+      <a href="{% url 'home' %}" class="btn-back">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+          <path d="M19 12H5M12 19l-7-7 7-7"/>
+        </svg>
+        Volver
+      </a>
+    </header>
+
+    <!-- TABS -->
+    <div class="tabs-bar">
+      <button class="tab-btn active" data-tab="teams">Equipos</button>
+      <button class="tab-btn" data-tab="players">Jugadores</button>
+    </div>
+
+    <!-- CONTENT -->
+    <div class="content">
+
+      <!-- TAB: EDITAR EQUIPOS -->
+      <div class="tab-panel active" id="tab-teams">
+        <div class="teams-editor-layout">
+          <div class="team-selector">
+            <div class="selector-title">Selecciona un equipo</div>
+            <div class="team-grid">
+              {% for team in teams %}
+              <div class="team-logo-card" data-team-id="{{ team.pk }}"
+                   data-name="{{ team.name }}"
+                   data-abbreviation="{{ team.abbreviation }}"
+                   data-city="{{ team.city }}"
+                   data-conference="{{ team.conference }}"
+                   data-division="{{ team.division }}"
+                   data-arena="{{ team.arena }}"
+                   data-capacity="{{ team.capacity }}"
+                   data-owner="{{ team.owner }}"
+                   data-attack="{{ team.attack }}"
+                   data-defense="{{ team.defense }}"
+                   data-overall="{{ team.overall }}"
+                   data-budget="{{ team.budget }}"
+                   data-reputation="{{ team.reputation }}"
+                   data-facilities="{{ team.facilities }}"
+                   data-logo="{{ team.logo }}"
+                   data-jersey-home="{{ team.jersey_home }}"
+                   data-jersey-away="{{ team.jersey_away }}"
+                   data-arena-image="{{ team.arena_image }}">
+                {% if team.logo %}
+                <img src="{% static team.logo %}" alt="{{ team.abbreviation }}">
+                {% else %}
+                <div class="team-logo-placeholder">{{ team.abbreviation }}</div>
+                {% endif %}
+                <span class="team-logo-name">{{ team.abbreviation }}</span>
+              </div>
+              {% endfor %}
+            </div>
+          </div>
+
+          <div class="team-form-panel" id="teamFormPanel">
+            <div class="form-empty" id="teamFormEmpty">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                <path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/>
+                <polyline points="9 22 9 12 15 12 15 22"/>
+              </svg>
+              <span>Selecciona un equipo para editar</span>
+            </div>
+
+            <form method="post" id="teamForm" style="display:none;"
+                  action="{% url 'editor_update_team' 0 %}">
+              {% csrf_token %}
+              <input type="hidden" name="team_id" id="teamFormId">
+
+              <div class="form-header">
+                <h2 id="teamFormTitle">Editar Equipo</h2>
+              </div>
+
+              <div class="form-section">
+                <h3>Identidad</h3>
+                <div class="form-row">
+                  <div class="form-group">
+                    <label>Nombre</label>
+                    <input type="text" name="name" id="teamName">
+                  </div>
+                  <div class="form-group">
+                    <label>Abreviatura</label>
+                    <input type="text" name="abbreviation" id="teamAbbr" maxlength="5">
+                  </div>
+                  <div class="form-group">
+                    <label>Ciudad</label>
+                    <input type="text" name="city" id="teamCity">
+                  </div>
+                </div>
+                <div class="form-row">
+                  <div class="form-group">
+                    <label>Conferencia</label>
+                    <select name="conference" id="teamConference">
+                      <option value="East">Eastern Conference</option>
+                      <option value="West">Western Conference</option>
+                    </select>
+                  </div>
+                  <div class="form-group">
+                    <label>Divisi&#243;n</label>
+                    <select name="division" id="teamDivision">
+                      <option value="Atlantic">Atlantic</option>
+                      <option value="Central">Central</option>
+                      <option value="Southeast">Southeast</option>
+                      <option value="Northwest">Northwest</option>
+                      <option value="Pacific">Pacific</option>
+                      <option value="Southwest">Southwest</option>
+                    </select>
+                  </div>
+                </div>
+              </div>
+
+              <div class="form-section">
+                <h3>Instalaciones</h3>
+                <div class="form-row">
+                  <div class="form-group">
+                    <label>Pabell&#243;n</label>
+                    <input type="text" name="arena" id="teamArena">
+                  </div>
+                  <div class="form-group">
+                    <label>Capacidad</label>
+                    <input type="number" name="capacity" id="teamCapacity">
+                  </div>
+                  <div class="form-group">
+                    <label>Propietario</label>
+                    <input type="text" name="owner" id="teamOwner">
+                  </div>
+                </div>
+              </div>
+
+              <div class="form-section">
+                <h3>Atributos</h3>
+                <div class="form-row">
+                  <div class="form-group">
+                    <label>Ataque</label>
+                    <input type="number" name="attack" id="teamAttack" min="0" max="99">
+                  </div>
+                  <div class="form-group">
+                    <label>Defensa</label>
+                    <input type="number" name="defense" id="teamDefense" min="0" max="99">
+                  </div>
+                  <div class="form-group">
+                    <label>Overall</label>
+                    <input type="number" name="overall" id="teamOverall" min="0" max="99">
+                  </div>
+                </div>
+                <div class="form-row">
+                  <div class="form-group">
+                    <label>Presupuesto</label>
+                    <input type="number" name="budget" id="teamBudget">
+                  </div>
+                  <div class="form-group">
+                    <label>Reputaci&#243;n (1-5)</label>
+                    <input type="number" name="reputation" id="teamReputation" min="1" max="5">
+                  </div>
+                  <div class="form-group">
+                    <label>Instalaciones (1-5)</label>
+                    <input type="number" name="facilities" id="teamFacilities" min="1" max="5">
+                  </div>
+                </div>
+              </div>
+
+              <div class="form-section">
+                <h3>Im&#225;genes</h3>
+                <div class="form-row">
+                  <div class="form-group">
+                    <label>Logo (ruta)</label>
+                    <input type="text" name="logo" id="teamLogo" placeholder="logos/lakers.png">
+                  </div>
+                  <div class="form-group">
+                    <label>Jersey Local (ruta)</label>
+                    <input type="text" name="jersey_home" id="teamJerseyHome" placeholder="jerseys/lakers_home.png">
+                  </div>
+                </div>
+                <div class="form-row">
+                  <div class="form-group">
+                    <label>Jersey Visitante (ruta)</label>
+                    <input type="text" name="jersey_away" id="teamJerseyAway" placeholder="jerseys/lakers_away.png">
+                  </div>
+                  <div class="form-group">
+                    <label>Imagen Pabell&#243;n (ruta)</label>
+                    <input type="text" name="arena_image" id="teamArenaImage" placeholder="arenas/lakers.png">
+                  </div>
+                </div>
+              </div>
+
+              <div class="form-actions">
+                <button type="button" class="btn-reset" onclick="resetTeamForm()">Resetear</button>
+                <button type="submit" class="btn-save">Guardar</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+
+      <!-- TAB: EDITAR JUGADORES -->
+      <div class="tab-panel" id="tab-players">
+        <div class="players-editor-layout">
+          <div class="team-selector">
+            <div class="selector-title">Selecciona un equipo</div>
+            <div class="team-grid">
+              {% for team in teams %}
+              <div class="team-logo-card player-team-card" data-team-id="{{ team.pk }}">
+                {% if team.logo %}
+                <img src="{% static team.logo %}" alt="{{ team.abbreviation }}">
+                {% else %}
+                <div class="team-logo-placeholder">{{ team.abbreviation }}</div>
+                {% endif %}
+                <span class="team-logo-name">{{ team.abbreviation }}</span>
+              </div>
+              {% endfor %}
+            </div>
+          </div>
+
+          <div class="players-split" id="playersSplit" style="display:none;">
+            <div class="players-list-panel">
+              <div class="list-header">
+                <h3 id="playersListTitle">Jugadores</h3>
+              </div>
+              <div class="players-list" id="playersList">
+              </div>
+            </div>
+
+            <div class="player-form-panel">
+              <div class="form-empty" id="playerFormEmpty">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                  <path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/>
+                  <circle cx="12" cy="7" r="4"/>
+                </svg>
+                <span>Selecciona un jugador para editar</span>
+              </div>
+
+              <form method="post" id="playerForm" style="display:none;"
+                    action="{% url 'editor_update_player' 0 %}">
+                {% csrf_token %}
+                <input type="hidden" name="player_id" id="playerFormId">
+
+                <div class="form-header">
+                  <h2 id="playerFormTitle">Editar Jugador</h2>
+                </div>
+
+                <div class="form-section">
+                  <h3>Datos Personales</h3>
+                  <div class="form-row">
+                    <div class="form-group">
+                      <label>Nombre</label>
+                      <input type="text" name="first_name" id="playerFirstName">
+                    </div>
+                    <div class="form-group">
+                      <label>Apellido</label>
+                      <input type="text" name="last_name" id="playerLastName">
+                    </div>
+                  </div>
+                  <div class="form-row">
+                    <div class="form-group">
+                      <label>Posici&#243;n</label>
+                      <select name="position" id="playerPosition">
+                        <option value="PG">PG - Point Guard</option>
+                        <option value="SG">SG - Shooting Guard</option>
+                        <option value="SF">SF - Small Forward</option>
+                        <option value="PF">PF - Power Forward</option>
+                        <option value="C">C - Center</option>
+                      </select>
+                    </div>
+                    <div class="form-group">
+                      <label>Edad</label>
+                      <input type="number" name="age" id="playerAge" min="16" max="50">
+                    </div>
+                    <div class="form-group">
+                      <label>Nacionalidad</label>
+                      <input type="text" name="nationality" id="playerNationality">
+                    </div>
+                  </div>
+                  <div class="form-row">
+                    <div class="form-group">
+                      <label>Altura (cm)</label>
+                      <input type="number" name="height_cm" id="playerHeight" min="160" max="240">
+                    </div>
+                    <div class="form-group">
+                      <label>Peso (kg)</label>
+                      <input type="number" name="weight_kg" id="playerWeight" min="60" max="180">
+                    </div>
+                    <div class="form-group">
+                      <label>Equipo</label>
+                      <select name="team" id="playerTeam">
+                        <option value="">Agente Libre</option>
+                        {% for team in teams %}
+                        <option value="{{ team.pk }}">{{ team.abbreviation }}</option>
+                        {% endfor %}
+                      </select>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="form-section">
+                  <h3>Atributos</h3>
+                  <div class="form-row">
+                    <div class="form-group">
+                      <label>Overall</label>
+                      <input type="number" name="overall" id="playerOverall" min="0" max="99">
+                    </div>
+                    <div class="form-group">
+                      <label>Potencial</label>
+                      <input type="number" name="potential" id="playerPotential" min="0" max="99">
+                    </div>
+                    <div class="form-group">
+                      <label>Velocidad</label>
+                      <input type="number" name="speed" id="playerSpeed" min="0" max="99">
+                    </div>
+                    <div class="form-group">
+                      <label>Tiro</label>
+                      <input type="number" name="shooting" id="playerShooting" min="0" max="99">
+                    </div>
+                  </div>
+                  <div class="form-row">
+                    <div class="form-group">
+                      <label>Triples</label>
+                      <input type="number" name="three_point" id="playerThreePoint" min="0" max="99">
+                    </div>
+                    <div class="form-group">
+                      <label>Pase</label>
+                      <input type="number" name="passing" id="playerPassing" min="0" max="99">
+                    </div>
+                    <div class="form-group">
+                      <label>Manejo</label>
+                      <input type="number" name="ball_handling" id="playerBallHandling" min="0" max="99">
+                    </div>
+                    <div class="form-group">
+                      <label>Defensa</label>
+                      <input type="number" name="defense" id="playerDefense" min="0" max="99">
+                    </div>
+                  </div>
+                  <div class="form-row">
+                    <div class="form-group">
+                      <label>Rebotes</label>
+                      <input type="number" name="rebounding" id="playerRebounding" min="0" max="99">
+                    </div>
+                    <div class="form-group">
+                      <label>Atletismo</label>
+                      <input type="number" name="athleticism" id="playerAthleticism" min="0" max="99">
+                    </div>
+                    <div class="form-group">
+                      <label>IQ</label>
+                      <input type="number" name="iq" id="playerIQ" min="0" max="99">
+                    </div>
+                    <div class="form-group">
+                      <label>Robos</label>
+                      <input type="number" name="steals" id="playerSteals" min="0" max="99">
+                    </div>
+                  </div>
+                  <div class="form-row">
+                    <div class="form-group">
+                      <label>Tapones</label>
+                      <input type="number" name="blocks" id="playerBlocks" min="0" max="99">
+                    </div>
+                  </div>
+                </div>
+
+                <div class="form-section">
+                  <h3>Lesiones</h3>
+                  <div class="form-row">
+                    <div class="form-group">
+                      <label>Tipo de Lesi&#243;n</label>
+                      <input type="text" name="injury_type" id="playerInjuryType" placeholder="Vac&#237;o si no est&#225; lesionado">
+                    </div>
+                    <div class="form-group">
+                      <label>D&#237;as</label>
+                      <input type="number" name="injury_days" id="playerInjuryDays" min="0">
+                    </div>
+                  </div>
+                </div>
+
+                <div class="form-section">
+                  <h3>Contrato</h3>
+                  <div class="form-row">
+                    <div class="form-group">
+                      <label>Salario</label>
+                      <input type="number" name="salary" id="playerSalary">
+                    </div>
+                    <div class="form-group">
+                      <label>A&#241;os de Contrato</label>
+                      <input type="number" name="contract_years" id="playerContractYears" min="1">
+                    </div>
+                  </div>
+                </div>
+
+                <div class="form-actions">
+                  <button type="button" class="btn-reset" onclick="resetPlayerForm()">Resetear</button>
+                  <button type="submit" class="btn-save">Guardar</button>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+<script>
+const STATIC = "{% get_static_prefix %}";
+
+// Store original team data for reset
+let selectedTeamData = null;
+let selectedPlayerData = null;
+
+// Tab switching
+document.querySelectorAll('.tab-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+    btn.classList.add('active');
+    document.getElementById('tab-' + btn.dataset.tab).classList.add('active');
+  });
+});
+
+// Team selection for both tabs
+document.querySelectorAll('.team-selector .team-logo-card').forEach(card => {
+  card.addEventListener('click', () => {
+    const teamId = card.dataset.teamId;
+
+    // Highlight selected card
+    card.closest('.team-grid').querySelectorAll('.team-logo-card').forEach(c => c.classList.remove('selected'));
+    card.classList.add('selected');
+
+    if (btnActive() === 'teams') {
+      loadTeamForm(card);
+    } else {
+      loadPlayersList(teamId);
+    }
+  });
+});
+
+function btnActive() {
+  return document.querySelector('.tab-btn.active').dataset.tab;
+}
+
+// Load team form
+function loadTeamForm(card) {
+  selectedTeamData = {
+    id: card.dataset.teamId,
+    name: card.dataset.name,
+    abbreviation: card.dataset.abbreviation,
+    city: card.dataset.city,
+    conference: card.dataset.conference,
+    division: card.dataset.division,
+    arena: card.dataset.arena,
+    capacity: card.dataset.capacity,
+    owner: card.dataset.owner,
+    attack: card.dataset.attack,
+    defense: card.dataset.defense,
+    overall: card.dataset.overall,
+    budget: card.dataset.budget,
+    reputation: card.dataset.reputation,
+    facilities: card.dataset.facilities,
+    logo: card.dataset.logo,
+    jerseyHome: card.dataset.jerseyHome,
+    jerseyAway: card.dataset.jerseyAway,
+    arenaImage: card.dataset.arenaImage,
+  };
+
+  document.getElementById('teamFormEmpty').style.display = 'none';
+  document.getElementById('teamForm').style.display = 'block';
+
+  const form = document.getElementById('teamForm');
+  form.action = "{% url 'editor_update_team' 0 %}".replace('0', selectedTeamData.id);
+
+  document.getElementById('teamFormId').value = selectedTeamData.id;
+  document.getElementById('teamFormTitle').textContent = 'Editar: ' + selectedTeamData.name;
+  document.getElementById('teamName').value = selectedTeamData.name;
+  document.getElementById('teamAbbr').value = selectedTeamData.abbreviation;
+  document.getElementById('teamCity').value = selectedTeamData.city;
+  document.getElementById('teamConference').value = selectedTeamData.conference;
+  document.getElementById('teamDivision').value = selectedTeamData.division;
+  document.getElementById('teamArena').value = selectedTeamData.arena;
+  document.getElementById('teamCapacity').value = selectedTeamData.capacity;
+  document.getElementById('teamOwner').value = selectedTeamData.owner;
+  document.getElementById('teamAttack').value = selectedTeamData.attack;
+  document.getElementById('teamDefense').value = selectedTeamData.defense;
+  document.getElementById('teamOverall').value = selectedTeamData.overall;
+  document.getElementById('teamBudget').value = selectedTeamData.budget;
+  document.getElementById('teamReputation').value = selectedTeamData.reputation;
+  document.getElementById('teamFacilities').value = selectedTeamData.facilities;
+  document.getElementById('teamLogo').value = selectedTeamData.logo;
+  document.getElementById('teamJerseyHome').value = selectedTeamData.jerseyHome;
+  document.getElementById('teamJerseyAway').value = selectedTeamData.jerseyAway;
+  document.getElementById('teamArenaImage').value = selectedTeamData.arenaImage;
+}
+
+function resetTeamForm() {
+  if (!selectedTeamData) return;
+  loadTeamForm(document.querySelector('.team-selector .team-logo-card.selected'));
+}
+
+// Load players list for a team
+function loadPlayersList(teamId) {
+  document.getElementById('playersSplit').style.display = 'flex';
+  document.getElementById('playerFormEmpty').style.display = 'flex';
+  document.getElementById('playerForm').style.display = 'none';
+
+  const teamName = document.querySelector('.player-team-card.selected .team-logo-name').textContent;
+  document.getElementById('playersListTitle').textContent = 'Jugadores - ' + teamName;
+
+  fetch('/api/players-by-team/' + teamId + '/')
+    .then(r => r.json())
+    .then(players => {
+      const list = document.getElementById('playersList');
+      list.innerHTML = '';
+      if (players.length === 0) {
+        list.innerHTML = '<div class="no-players">No hay jugadores en este equipo</div>';
+        return;
+      }
+      players.forEach(p => {
+        const row = document.createElement('div');
+        row.className = 'player-list-item';
+        row.dataset.playerId = p.id;
+        row.dataset.firstName = p.first_name;
+        row.dataset.lastName = p.last_name;
+        row.dataset.position = p.position;
+        row.dataset.age = p.age;
+        row.dataset.nationality = p.nationality;
+        row.dataset.heightCm = p.height_cm;
+        row.dataset.weightKg = p.weight_kg;
+        row.dataset.overall = p.overall;
+        row.dataset.potential = p.potential;
+        row.dataset.speed = p.speed;
+        row.dataset.shooting = p.shooting;
+        row.dataset.threePoint = p.three_point;
+        row.dataset.passing = p.passing;
+        row.dataset.ballHandling = p.ball_handling;
+        row.dataset.defense = p.defense;
+        row.dataset.rebounding = p.rebounding;
+        row.dataset.athleticism = p.athleticism;
+        row.dataset.iq = p.iq;
+        row.dataset.steals = p.steals;
+        row.dataset.blocks = p.blocks;
+        row.dataset.injuryDays = p.injury_days;
+        row.dataset.injuryType = p.injury_type;
+        row.dataset.salary = p.salary;
+        row.dataset.contractYears = p.contract_years;
+        row.dataset.team = p.team || '';
+
+        row.innerHTML = '<span class="player-pos">' + p.position + '</span>' +
+                        '<span class="player-name">' + p.first_name + ' ' + p.last_name + '</span>' +
+                        '<span class="player-ovr">' + p.overall + '</span>';
+
+        row.addEventListener('click', () => {
+          list.querySelectorAll('.player-list-item').forEach(r => r.classList.remove('selected'));
+          row.classList.add('selected');
+          loadPlayerForm(row);
+        });
+
+        list.appendChild(row);
+      });
+    });
+}
+
+function loadPlayerForm(row) {
+  selectedPlayerData = {
+    id: row.dataset.playerId,
+    firstName: row.dataset.firstName,
+    lastName: row.dataset.lastName,
+    position: row.dataset.position,
+    age: row.dataset.age,
+    nationality: row.dataset.nationality,
+    heightCm: row.dataset.heightCm,
+    weightKg: row.dataset.weightKg,
+    overall: row.dataset.overall,
+    potential: row.dataset.potential,
+    speed: row.dataset.speed,
+    shooting: row.dataset.shooting,
+    threePoint: row.dataset.threePoint,
+    passing: row.dataset.passing,
+    ballHandling: row.dataset.ballHandling,
+    defense: row.dataset.defense,
+    rebounding: row.dataset.rebounding,
+    athleticism: row.dataset.athleticism,
+    iq: row.dataset.iq,
+    steals: row.dataset.steals,
+    blocks: row.dataset.blocks,
+    injuryDays: row.dataset.injuryDays,
+    injuryType: row.dataset.injuryType,
+    salary: row.dataset.salary,
+    contractYears: row.dataset.contractYears,
+    team: row.dataset.team,
+  };
+
+  document.getElementById('playerFormEmpty').style.display = 'none';
+  document.getElementById('playerForm').style.display = 'block';
+
+  const form = document.getElementById('playerForm');
+  form.action = "{% url 'editor_update_player' 0 %}".replace('0', selectedPlayerData.id);
+
+  document.getElementById('playerFormId').value = selectedPlayerData.id;
+  document.getElementById('playerFormTitle').textContent = 'Editar: ' + selectedPlayerData.firstName + ' ' + selectedPlayerData.lastName;
+  document.getElementById('playerFirstName').value = selectedPlayerData.firstName;
+  document.getElementById('playerLastName').value = selectedPlayerData.lastName;
+  document.getElementById('playerPosition').value = selectedPlayerData.position;
+  document.getElementById('playerAge').value = selectedPlayerData.age;
+  document.getElementById('playerNationality').value = selectedPlayerData.nationality;
+  document.getElementById('playerHeight').value = selectedPlayerData.heightCm;
+  document.getElementById('playerWeight').value = selectedPlayerData.weightKg;
+  document.getElementById('playerTeam').value = selectedPlayerData.team;
+  document.getElementById('playerOverall').value = selectedPlayerData.overall;
+  document.getElementById('playerPotential').value = selectedPlayerData.potential;
+  document.getElementById('playerSpeed').value = selectedPlayerData.speed;
+  document.getElementById('playerShooting').value = selectedPlayerData.shooting;
+  document.getElementById('playerThreePoint').value = selectedPlayerData.threePoint;
+  document.getElementById('playerPassing').value = selectedPlayerData.passing;
+  document.getElementById('playerBallHandling').value = selectedPlayerData.ballHandling;
+  document.getElementById('playerDefense').value = selectedPlayerData.defense;
+  document.getElementById('playerRebounding').value = selectedPlayerData.rebounding;
+  document.getElementById('playerAthleticism').value = selectedPlayerData.athleticism;
+  document.getElementById('playerIQ').value = selectedPlayerData.iq;
+  document.getElementById('playerSteals').value = selectedPlayerData.steals;
+  document.getElementById('playerBlocks').value = selectedPlayerData.blocks;
+  document.getElementById('playerInjuryDays').value = selectedPlayerData.injuryDays;
+  document.getElementById('playerInjuryType').value = selectedPlayerData.injuryType;
+  document.getElementById('playerSalary').value = selectedPlayerData.salary;
+  document.getElementById('playerContractYears').value = selectedPlayerData.contractYears;
+}
+
+function resetPlayerForm() {
+  if (!selectedPlayerData) return;
+  const row = document.querySelector('.player-list-item.selected');
+  if (row) loadPlayerForm(row);
+}
+</script>
+
+</body>
+</html>

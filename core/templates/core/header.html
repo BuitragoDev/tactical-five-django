@@ -1,0 +1,52 @@
+{% load static humanize roster_tags %}
+<header class="top-header">
+  <div class="header-left">
+    {% if team.logo %}
+    <img src="{% static team.logo %}" alt="{{ team.name }}" class="header-logo">
+    {% endif %}
+    <div class="header-info">
+      <div class="header-team-name">{{ team.name }}</div>
+      <div class="header-manager">Manager: <strong>{{ manager_name }}</strong></div>
+    </div>
+    <div class="header-budget">
+      <span class="budget-label">Presupuesto</span>
+      <span class="budget-value">${{ team.budget|floatformat:0|intcomma }}</span>
+    </div>
+    <div class="header-salary">
+      <span class="salary-label">Masa salarial</span>
+      <span class="salary-value">${{ team.payroll|floatformat:0|intcomma }}</span>
+    </div>
+    {% with margin=team.salary_margin %}
+    <div class="header-cap">
+      <span class="cap-label">Margen salarial</span>
+      {% if margin >= 0 %}
+      <span class="cap-value cap-positive">+${{ margin|floatformat:0|intcomma }}</span>
+      {% else %}
+      <span class="cap-value cap-negative">-${{ margin|abs_value|intcomma }}</span>
+      {% endif %}
+    </div>
+    {% endwith %}
+  </div>
+  <div class="header-right">
+    <div class="header-season">
+      <span class="season-label">Temporada {{ season_label }}</span>
+    </div>
+    <div class="header-date">{{ current_date }}</div>
+    {% if 'DÍA DE PARTIDO' in btn_text %}
+    <a href="{% url 'match_day' %}" class="btn-advance btn-game-day" id="btnAdvance">
+      {{ btn_text }}
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+    </a>
+    {% elif 'SIMULAR PARTIDOS' in btn_text %}
+    <button class="btn-advance" id="btnAdvance" onclick="document.getElementById('simulateForm').submit();">
+      {{ btn_text }}
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+    </button>
+    {% else %}
+    <button class="btn-advance" id="btnAdvance" onclick="document.getElementById('advanceForm').submit();">
+      {{ btn_text }}
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+    </button>
+    {% endif %}
+  </div>
+</header>

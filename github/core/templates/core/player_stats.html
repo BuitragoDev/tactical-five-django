@@ -1,0 +1,286 @@
+{% load static humanize roster_tags %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Estadísticas · Tactical Five</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Roboto+Condensed:wght@300;400;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="{% static 'css/player_stats.css' %}">
+</head>
+<body>
+
+<div class="bg-noise"></div>
+<div class="bg-stripes"></div>
+
+<div class="app">
+
+  {% include 'core/sidebar.html' with sidebar_page='player_stats' %}
+
+<form method="post" action="{% url 'advance_day' %}" id="advanceForm" style="display:none;">
+  {% csrf_token %}
+</form>
+<form method="post" action="{% url 'reset_game' %}" id="resetForm" style="display:none;">
+  {% csrf_token %}
+</form>
+
+
+  <div class="main">
+    {% include 'core/header.html' %}
+
+    <div class="content">
+
+      <div class="stats-tabs">
+        <a href="?stat=points&time={{ time_filter }}&mode={{ display_mode }}" class="stat-tab {% if stat_type == 'points' %}active{% endif %}">Puntos</a>
+        <a href="?stat=rebounds&time={{ time_filter }}&mode={{ display_mode }}" class="stat-tab {% if stat_type == 'rebounds' %}active{% endif %}">Rebotes</a>
+        <a href="?stat=assists&time={{ time_filter }}&mode={{ display_mode }}" class="stat-tab {% if stat_type == 'assists' %}active{% endif %}">Asistencias</a>
+        <a href="?stat=steals&time={{ time_filter }}&mode={{ display_mode }}" class="stat-tab {% if stat_type == 'steals' %}active{% endif %}">Robos</a>
+        <a href="?stat=blocks&time={{ time_filter }}&mode={{ display_mode }}" class="stat-tab {% if stat_type == 'blocks' %}active{% endif %}">Tapones</a>
+        <a href="?stat=fg_pct&time={{ time_filter }}&mode={{ display_mode }}" class="stat-tab {% if stat_type == 'fg_pct' %}active{% endif %}">% TC</a>
+        <a href="?stat=fg3_pct&time={{ time_filter }}&mode={{ display_mode }}" class="stat-tab {% if stat_type == 'fg3_pct' %}active{% endif %}">% 3P</a>
+        <a href="?stat=ft_pct&time={{ time_filter }}&mode={{ display_mode }}" class="stat-tab {% if stat_type == 'ft_pct' %}active{% endif %}">% TL</a>
+        <a href="?stat=rating&time={{ time_filter }}&mode={{ display_mode }}" class="stat-tab {% if stat_type == 'rating' %}active{% endif %}">VAL</a>
+        <a href="?stat=turnovers&time={{ time_filter }}&mode={{ display_mode }}" class="stat-tab {% if stat_type == 'turnovers' %}active{% endif %}">Pérdidas</a>
+        <a href="?stat=minutes&time={{ time_filter }}&mode={{ display_mode }}" class="stat-tab {% if stat_type == 'minutes' %}active{% endif %}">Minutos</a>
+        <a href="?stat=double_double&time={{ time_filter }}&mode={{ display_mode }}" class="stat-tab {% if stat_type == 'double_double' %}active{% endif %}">DD</a>
+        <a href="?stat=triple_double&time={{ time_filter }}&mode={{ display_mode }}" class="stat-tab {% if stat_type == 'triple_double' %}active{% endif %}">TD</a>
+      </div>
+
+      <div class="filter-row">
+        <div class="time-filters">
+          <a href="?stat={{ stat_type }}&time=season&mode={{ display_mode }}" class="time-tab {% if time_filter != 'historical' %}active{% endif %}">Temporada {{ season_label }}</a>
+          <a href="?stat={{ stat_type }}&time=historical&mode={{ display_mode }}" class="time-tab {% if time_filter == 'historical' %}active{% endif %}">Histórico</a>
+        </div>
+        <div class="mode-filters">
+          <a href="?stat={{ stat_type }}&time={{ time_filter }}&mode=totals" class="mode-tab {% if display_mode == 'totals' %}active{% endif %}">Totales</a>
+          <a href="?stat={{ stat_type }}&time={{ time_filter }}&mode=averages" class="mode-tab {% if display_mode == 'averages' %}active{% endif %}">Promedios</a>
+        </div>
+      </div>
+
+      <div class="stats-panel">
+        <div class="stats-panel-header">
+          <div class="stats-title">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 20V10M12 20V4M6 20v-6"/></svg>
+            {{ stat_labels|get_item:stat_type }} — Líderes de la Liga
+          </div>
+        </div>
+
+        <div class="stats-table-wrapper">
+        <table class="stats-table">
+          <thead>
+            <tr>
+              <th class="col-rank">#</th>
+              <th class="col-player">Jugador</th>
+              <th class="col-team">Equipo</th>
+              <th class="col-pos">Pos</th>
+              <th class="col-gp">PJ</th>
+              <th class="col-stat">{{ stat_labels|get_item:stat_type }}{% if display_mode == 'averages' and stat_type not in 'fg_pct,fg3_pct,ft_pct' %}/P{% endif %}</th>
+              {% if stat_type == 'points' %}
+              <th class="col-rpg">{% if display_mode == 'averages' %}REB/P{% else %}REB{% endif %}</th>
+              <th class="col-apg">{% if display_mode == 'averages' %}AST/P{% else %}AST{% endif %}</th>
+              <th class="col-fg">TC%</th>
+              <th class="col-3p">3P%</th>
+              <th class="col-ft">TL%</th>
+              <th class="col-val">{% if display_mode == 'averages' %}VAL/P{% else %}VAL{% endif %}</th>
+              {% elif stat_type == 'rebounds' %}
+              <th class="col-ppg">{% if display_mode == 'averages' %}PTS/P{% else %}PTS{% endif %}</th>
+              <th class="col-apg">{% if display_mode == 'averages' %}AST/P{% else %}AST{% endif %}</th>
+              <th class="col-oreb">ROF</th>
+              <th class="col-dreb">RDF</th>
+              <th class="col-val">{% if display_mode == 'averages' %}VAL/P{% else %}VAL{% endif %}</th>
+              {% elif stat_type == 'assists' %}
+              <th class="col-ppg">{% if display_mode == 'averages' %}PTS/P{% else %}PTS{% endif %}</th>
+              <th class="col-rpg">{% if display_mode == 'averages' %}REB/P{% else %}REB{% endif %}</th>
+              <th class="col-topg">{% if display_mode == 'averages' %}PER/P{% else %}PER{% endif %}</th>
+              <th class="col-val">{% if display_mode == 'averages' %}VAL/P{% else %}VAL{% endif %}</th>
+              {% elif stat_type == 'steals' %}
+              <th class="col-ppg">{% if display_mode == 'averages' %}PTS/P{% else %}PTS{% endif %}</th>
+              <th class="col-rpg">{% if display_mode == 'averages' %}REB/P{% else %}REB{% endif %}</th>
+              <th class="col-apg">{% if display_mode == 'averages' %}AST/P{% else %}AST{% endif %}</th>
+              <th class="col-val">{% if display_mode == 'averages' %}VAL/P{% else %}VAL{% endif %}</th>
+              {% elif stat_type == 'blocks' %}
+              <th class="col-ppg">{% if display_mode == 'averages' %}PTS/P{% else %}PTS{% endif %}</th>
+              <th class="col-rpg">{% if display_mode == 'averages' %}REB/P{% else %}REB{% endif %}</th>
+              <th class="col-apg">{% if display_mode == 'averages' %}AST/P{% else %}AST{% endif %}</th>
+              <th class="col-val">{% if display_mode == 'averages' %}VAL/P{% else %}VAL{% endif %}</th>
+              {% elif stat_type == 'fg_pct' or stat_type == 'fg3_pct' or stat_type == 'ft_pct' %}
+              <th class="col-ppg">{% if display_mode == 'averages' %}PTS/P{% else %}PTS{% endif %}</th>
+              <th class="col-rpg">{% if display_mode == 'averages' %}REB/P{% else %}REB{% endif %}</th>
+              <th class="col-apg">{% if display_mode == 'averages' %}AST/P{% else %}AST{% endif %}</th>
+              <th class="col-made">Convertidos</th>
+              <th class="col-val">{% if display_mode == 'averages' %}VAL/P{% else %}VAL{% endif %}</th>
+              {% elif stat_type == 'rating' %}
+              <th class="col-ppg">{% if display_mode == 'averages' %}PTS/P{% else %}PTS{% endif %}</th>
+              <th class="col-rpg">{% if display_mode == 'averages' %}REB/P{% else %}REB{% endif %}</th>
+              <th class="col-apg">{% if display_mode == 'averages' %}AST/P{% else %}AST{% endif %}</th>
+              <th class="col-fg">TC%</th>
+              {% elif stat_type == 'turnovers' %}
+              <th class="col-ppg">{% if display_mode == 'averages' %}PTS/P{% else %}PTS{% endif %}</th>
+              <th class="col-rpg">{% if display_mode == 'averages' %}REB/P{% else %}REB{% endif %}</th>
+              <th class="col-apg">{% if display_mode == 'averages' %}AST/P{% else %}AST{% endif %}</th>
+              <th class="col-val">{% if display_mode == 'averages' %}VAL/P{% else %}VAL{% endif %}</th>
+              {% elif stat_type == 'minutes' %}
+              <th class="col-ppg">{% if display_mode == 'averages' %}PTS/P{% else %}PTS{% endif %}</th>
+              <th class="col-rpg">{% if display_mode == 'averages' %}REB/P{% else %}REB{% endif %}</th>
+              <th class="col-apg">{% if display_mode == 'averages' %}AST/P{% else %}AST{% endif %}</th>
+              <th class="col-val">{% if display_mode == 'averages' %}VAL/P{% else %}VAL{% endif %}</th>
+              {% elif stat_type == 'double_double' %}
+              <th class="col-ppg">PTS</th>
+              <th class="col-rpg">REB</th>
+              <th class="col-apg">AST</th>
+              <th class="col-val">VAL</th>
+              {% elif stat_type == 'triple_double' %}
+              <th class="col-ppg">PTS</th>
+              <th class="col-rpg">REB</th>
+              <th class="col-apg">AST</th>
+              <th class="col-val">VAL</th>
+              {% endif %}
+            </tr>
+          </thead>
+          <tbody>
+            {% for s in all_stats %}
+            {% if s.games >= 1 %}
+            <tr class="{% if s.player__team == team.pk %}my-player{% endif %}">
+              <td class="col-rank">
+                {% if forloop.counter <= 3 %}
+                <span class="rank-badge rank-top">{{ forloop.counter }}</span>
+                {% else %}
+                <span class="rank-badge">{{ forloop.counter }}</span>
+                {% endif %}
+              </td>
+              <td class="col-player">
+                <span class="player-name">{{ s.name }}</span>
+              </td>
+              <td class="col-team">
+                {% if s.player__team__logo %}
+                <img src="{% static s.player__team__logo %}" alt="{{ s.player__team__name }}" class="mini-logo">
+                {% endif %}
+                <span class="team-abbr">{{ s.player__team__abbreviation }}</span>
+              </td>
+              <td class="col-pos">{{ s.player__position }}</td>
+              <td class="col-gp">{{ s.games }}</td>
+              <td class="col-stat stat-highlight">
+                {% if display_mode == 'totals' %}
+                {% if stat_type == 'points' %}{{ s.total_points|default:0 }}
+                {% elif stat_type == 'rebounds' %}{{ s.total_rebounds|default:0 }}
+                {% elif stat_type == 'assists' %}{{ s.total_assists|default:0 }}
+                {% elif stat_type == 'steals' %}{{ s.total_steals|default:0 }}
+                {% elif stat_type == 'blocks' %}{{ s.total_blocks|default:0 }}
+                {% elif stat_type == 'fg_pct' %}{{ s.fg_pct }}%
+                {% elif stat_type == 'fg3_pct' %}{{ s.fg3_pct }}%
+                {% elif stat_type == 'ft_pct' %}{{ s.ft_pct }}%
+                {% elif stat_type == 'rating' %}{{ s.total_rating|default:0 }}
+                {% elif stat_type == 'turnovers' %}{{ s.total_turnovers|default:0 }}
+                {% elif stat_type == 'minutes' %}{{ s.total_minutes|default:0 }}
+                {% elif stat_type == 'double_double' %}{{ s.total_double_double|default:0 }}
+                {% elif stat_type == 'triple_double' %}{{ s.total_triple_double|default:0 }}
+                {% endif %}
+                {% else %}
+                {% if stat_type == 'points' %}{{ s.ppg }}
+                {% elif stat_type == 'rebounds' %}{{ s.rpg }}
+                {% elif stat_type == 'assists' %}{{ s.apg }}
+                {% elif stat_type == 'steals' %}{{ s.spg }}
+                {% elif stat_type == 'blocks' %}{{ s.bpg }}
+                {% elif stat_type == 'fg_pct' %}{{ s.fg_pct }}%
+                {% elif stat_type == 'fg3_pct' %}{{ s.fg3_pct }}%
+                {% elif stat_type == 'ft_pct' %}{{ s.ft_pct }}%
+                {% elif stat_type == 'rating' %}{{ s.rpg_avg }}
+                {% elif stat_type == 'turnovers' %}{{ s.topg }}
+                {% elif stat_type == 'minutes' %}{{ s.mpg }}
+                {% endif %}
+                {% endif %}
+              </td>
+              {% if stat_type == 'points' %}
+              <td class="col-rpg">{% if display_mode == 'totals' %}{{ s.total_rebounds|default:0 }}{% else %}{{ s.rpg }}{% endif %}</td>
+              <td class="col-apg">{% if display_mode == 'totals' %}{{ s.total_assists|default:0 }}{% else %}{{ s.apg }}{% endif %}</td>
+              <td class="col-fg">{{ s.fg_pct }}%</td>
+              <td class="col-3p">{{ s.fg3_pct }}%</td>
+              <td class="col-ft">{{ s.ft_pct }}%</td>
+              <td class="col-val">{% if display_mode == 'totals' %}{{ s.total_rating|default:0 }}{% else %}{{ s.rpg_avg }}{% endif %}</td>
+              {% elif stat_type == 'rebounds' %}
+              <td class="col-ppg">{% if display_mode == 'totals' %}{{ s.total_points|default:0 }}{% else %}{{ s.ppg }}{% endif %}</td>
+              <td class="col-apg">{% if display_mode == 'totals' %}{{ s.total_assists|default:0 }}{% else %}{{ s.apg }}{% endif %}</td>
+              <td class="col-oreb">{{ s.total_oreb|default:0 }}</td>
+              <td class="col-dreb">{{ s.total_dreb|default:0 }}</td>
+              <td class="col-val">{% if display_mode == 'totals' %}{{ s.total_rating|default:0 }}{% else %}{{ s.rpg_avg }}{% endif %}</td>
+              {% elif stat_type == 'assists' %}
+              <td class="col-ppg">{% if display_mode == 'totals' %}{{ s.total_points|default:0 }}{% else %}{{ s.ppg }}{% endif %}</td>
+              <td class="col-rpg">{% if display_mode == 'totals' %}{{ s.total_rebounds|default:0 }}{% else %}{{ s.rpg }}{% endif %}</td>
+              <td class="col-topg">{% if display_mode == 'totals' %}{{ s.total_turnovers|default:0 }}{% else %}{{ s.topg }}{% endif %}</td>
+              <td class="col-val">{% if display_mode == 'totals' %}{{ s.total_rating|default:0 }}{% else %}{{ s.rpg_avg }}{% endif %}</td>
+              {% elif stat_type == 'steals' %}
+              <td class="col-ppg">{% if display_mode == 'totals' %}{{ s.total_points|default:0 }}{% else %}{{ s.ppg }}{% endif %}</td>
+              <td class="col-rpg">{% if display_mode == 'totals' %}{{ s.total_rebounds|default:0 }}{% else %}{{ s.rpg }}{% endif %}</td>
+              <td class="col-apg">{% if display_mode == 'totals' %}{{ s.total_assists|default:0 }}{% else %}{{ s.apg }}{% endif %}</td>
+              <td class="col-val">{% if display_mode == 'totals' %}{{ s.total_rating|default:0 }}{% else %}{{ s.rpg_avg }}{% endif %}</td>
+              {% elif stat_type == 'blocks' %}
+              <td class="col-ppg">{% if display_mode == 'totals' %}{{ s.total_points|default:0 }}{% else %}{{ s.ppg }}{% endif %}</td>
+              <td class="col-rpg">{% if display_mode == 'totals' %}{{ s.total_rebounds|default:0 }}{% else %}{{ s.rpg }}{% endif %}</td>
+              <td class="col-apg">{% if display_mode == 'totals' %}{{ s.total_assists|default:0 }}{% else %}{{ s.apg }}{% endif %}</td>
+              <td class="col-val">{% if display_mode == 'totals' %}{{ s.total_rating|default:0 }}{% else %}{{ s.rpg_avg }}{% endif %}</td>
+              {% elif stat_type == 'fg_pct' or stat_type == 'fg3_pct' or stat_type == 'ft_pct' %}
+              <td class="col-ppg">{% if display_mode == 'totals' %}{{ s.total_points|default:0 }}{% else %}{{ s.ppg }}{% endif %}</td>
+              <td class="col-rpg">{% if display_mode == 'totals' %}{{ s.total_rebounds|default:0 }}{% else %}{{ s.rpg }}{% endif %}</td>
+              <td class="col-apg">{% if display_mode == 'totals' %}{{ s.total_assists|default:0 }}{% else %}{{ s.apg }}{% endif %}</td>
+              {% if stat_type == 'fg_pct' %}
+              <td class="col-made">{{ s.total_fgm }}/{{ s.total_fga }}</td>
+              {% elif stat_type == 'fg3_pct' %}
+              <td class="col-made">{{ s.total_fg3m }}/{{ s.total_fg3a }}</td>
+              {% elif stat_type == 'ft_pct' %}
+              <td class="col-made">{{ s.total_ftm }}/{{ s.total_fta }}</td>
+              {% endif %}
+              <td class="col-val">{% if display_mode == 'totals' %}{{ s.total_rating|default:0 }}{% else %}{{ s.rpg_avg }}{% endif %}</td>
+              {% elif stat_type == 'rating' %}
+              <td class="col-ppg">{% if display_mode == 'totals' %}{{ s.total_points|default:0 }}{% else %}{{ s.ppg }}{% endif %}</td>
+              <td class="col-rpg">{% if display_mode == 'totals' %}{{ s.total_rebounds|default:0 }}{% else %}{{ s.rpg }}{% endif %}</td>
+              <td class="col-apg">{% if display_mode == 'totals' %}{{ s.total_assists|default:0 }}{% else %}{{ s.apg }}{% endif %}</td>
+              <td class="col-fg">{{ s.fg_pct }}%</td>
+              {% elif stat_type == 'turnovers' %}
+              <td class="col-ppg">{% if display_mode == 'totals' %}{{ s.total_points|default:0 }}{% else %}{{ s.ppg }}{% endif %}</td>
+              <td class="col-rpg">{% if display_mode == 'totals' %}{{ s.total_rebounds|default:0 }}{% else %}{{ s.rpg }}{% endif %}</td>
+              <td class="col-apg">{% if display_mode == 'totals' %}{{ s.total_assists|default:0 }}{% else %}{{ s.apg }}{% endif %}</td>
+              <td class="col-val">{% if display_mode == 'totals' %}{{ s.total_rating|default:0 }}{% else %}{{ s.rpg_avg }}{% endif %}</td>
+              {% elif stat_type == 'minutes' %}
+              <td class="col-ppg">{% if display_mode == 'totals' %}{{ s.total_points|default:0 }}{% else %}{{ s.ppg }}{% endif %}</td>
+              <td class="col-rpg">{% if display_mode == 'totals' %}{{ s.total_rebounds|default:0 }}{% else %}{{ s.rpg }}{% endif %}</td>
+              <td class="col-apg">{% if display_mode == 'totals' %}{{ s.total_assists|default:0 }}{% else %}{{ s.apg }}{% endif %}</td>
+              <td class="col-val">{% if display_mode == 'totals' %}{{ s.total_rating|default:0 }}{% else %}{{ s.rpg_avg }}{% endif %}</td>
+              {% elif stat_type == 'double_double' %}
+              <td class="col-ppg">{{ s.total_points|default:0 }}</td>
+              <td class="col-rpg">{{ s.total_rebounds|default:0 }}</td>
+              <td class="col-apg">{{ s.total_assists|default:0 }}</td>
+              <td class="col-val">{{ s.total_rating|default:0 }}</td>
+              {% elif stat_type == 'triple_double' %}
+              <td class="col-ppg">{{ s.total_points|default:0 }}</td>
+              <td class="col-rpg">{{ s.total_rebounds|default:0 }}</td>
+              <td class="col-apg">{{ s.total_assists|default:0 }}</td>
+              <td class="col-val">{{ s.total_rating|default:0 }}</td>
+              {% endif %}
+            </tr>
+            {% endif %}
+            {% endfor %}
+          </tbody>
+        </table>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<script>
+document.getElementById('btnAdvance')?.addEventListener('click', function() {
+  document.getElementById('advanceForm').submit();
+});
+document.getElementById('btnReset')?.addEventListener('click', function(e) {
+  e.preventDefault();
+  if (confirm('¿Seguro que quieres reiniciar la partida? Se perderán todos los datos.')) {
+    document.getElementById('resetForm').submit();
+  }
+});
+</script>
+
+</body>
+</html>

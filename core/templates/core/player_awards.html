@@ -1,0 +1,166 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Premios de Jugadores · Tactical Five</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Roboto+Condensed:wght@300;400;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="{% static 'css/season_summary.css' %}">
+</head>
+<body>
+
+<div class="bg-noise"></div>
+<div class="bg-stripes"></div>
+
+<div class="app">
+
+  <div class="main">
+    <header class="top-header">
+      <div class="header-left">
+        {% if team.logo %}
+        <img src="{% static team.logo %}" alt="{{ team.name }}" class="header-logo">
+        {% endif %}
+        <div class="header-info">
+          <div class="header-team-name">{{ team.name }} <span class="header-subtitle">(PREMIOS DE JUGADORES)</span></div>
+          <div class="header-manager">Manager: <strong>{{ manager_name }}</strong></div>
+        </div>
+      </div>
+      <div class="header-right">
+        <div class="header-season">
+          <span class="season-label">Temporada {{ season_label }}</span>
+        </div>
+        <div class="header-date">{{ current_date }}</div>
+        <a href="{% url 'end_season' %}" class="btn-header-back">
+          FIN DE TEMPORADA
+        </a>
+      </div>
+    </header>
+
+    <div class="content">
+      <div class="summary-container">
+        <div class="summary-header">
+          <h1>Premios de Jugadores</h1>
+          <span class="season-tag">{{ season_label }}</span>
+        </div>
+
+        <!-- MVP + Rookie side by side -->
+        <div class="awards-row">
+          {% if mvp %}
+          <div class="award-card mvp-card">
+            <div class="award-label">MVP de la Temporada</div>
+            <div class="award-player">
+              <div class="player-name">{{ mvp.player__first_name }} {{ mvp.player__last_name }}</div>
+              <div class="player-team">{{ mvp.player__team__name }}</div>
+              <div class="stat-row">
+                <div class="stat-box">
+                  <span class="stat-val">{{ mvp.avg_pts|floatformat:1 }}</span>
+                  <span class="stat-label">PTS</span>
+                </div>
+                <div class="stat-box">
+                  <span class="stat-val">{{ mvp.avg_reb|floatformat:1 }}</span>
+                  <span class="stat-label">REB</span>
+                </div>
+                <div class="stat-box">
+                  <span class="stat-val">{{ mvp.avg_ast|floatformat:1 }}</span>
+                  <span class="stat-label">AST</span>
+                </div>
+              </div>
+            </div>
+          </div>
+          {% endif %}
+
+          {% if rookie_of_year %}
+          <div class="award-card rookie-card">
+            <div class="award-label">Rookie del Año</div>
+            <div class="award-player">
+              <div class="player-name">{{ rookie_of_year.player__first_name }} {{ rookie_of_year.player__last_name }}</div>
+              <div class="player-team">{{ rookie_of_year.player__team__name }}</div>
+              <div class="stat-row">
+                <div class="stat-box">
+                  <span class="stat-val">{{ rookie_of_year.avg_pts|floatformat:1 }}</span>
+                  <span class="stat-label">PTS</span>
+                </div>
+                <div class="stat-box">
+                  <span class="stat-val">{{ rookie_of_year.avg_reb|floatformat:1 }}</span>
+                  <span class="stat-label">REB</span>
+                </div>
+                <div class="stat-box">
+                  <span class="stat-val">{{ rookie_of_year.avg_ast|floatformat:1 }}</span>
+                  <span class="stat-label">AST</span>
+                </div>
+              </div>
+            </div>
+          </div>
+          {% endif %}
+        </div>
+
+        <!-- All-Star Team -->
+        {% if all_star %}
+        <div class="award-section">
+          <h2>Mejor Quinteto de la Temporada</h2>
+          <div class="team-grid five-col">
+            {% for player in all_star %}
+            <div class="team-card five">
+              <div class="team-card-pos">{{ player.player__position }}</div>
+              <div class="team-card-name">{{ player.player__first_name }} {{ player.player__last_name }}</div>
+              <div class="team-card-team">{{ player.player__team__name }}</div>
+              <div class="stat-row">
+                <div class="stat-box">
+                  <span class="stat-val">{{ player.avg_pts|floatformat:1 }}</span>
+                  <span class="stat-label">PTS</span>
+                </div>
+                <div class="stat-box">
+                  <span class="stat-val">{{ player.avg_reb|floatformat:1 }}</span>
+                  <span class="stat-label">REB</span>
+                </div>
+                <div class="stat-box">
+                  <span class="stat-val">{{ player.avg_ast|floatformat:1 }}</span>
+                  <span class="stat-label">AST</span>
+                </div>
+              </div>
+            </div>
+            {% endfor %}
+          </div>
+        </div>
+        {% endif %}
+
+        <!-- All-Rookie Team -->
+        {% if all_rookie %}
+        <div class="award-section">
+          <h2>Mejor Quinteto de Rookies</h2>
+          <div class="team-grid five-col">
+            {% for player in all_rookie %}
+            <div class="team-card rookie">
+              <div class="team-card-pos">{{ player.player__position }}</div>
+              <div class="team-card-name">{{ player.player__first_name }} {{ player.player__last_name }}</div>
+              <div class="team-card-team">{{ player.player__team__name }}</div>
+              <div class="stat-row">
+                <div class="stat-box">
+                  <span class="stat-val">{{ player.avg_pts|floatformat:1 }}</span>
+                  <span class="stat-label">PTS</span>
+                </div>
+                <div class="stat-box">
+                  <span class="stat-val">{{ player.avg_reb|floatformat:1 }}</span>
+                  <span class="stat-label">REB</span>
+                </div>
+                <div class="stat-box">
+                  <span class="stat-val">{{ player.avg_ast|floatformat:1 }}</span>
+                  <span class="stat-label">AST</span>
+                </div>
+              </div>
+            </div>
+            {% endfor %}
+          </div>
+        </div>
+        {% endif %}
+
+      </div>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>

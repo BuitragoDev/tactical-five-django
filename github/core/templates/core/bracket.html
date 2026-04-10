@@ -1,0 +1,419 @@
+{% load static roster_tags conference_tags %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Playoffs · Tactical Five</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="{% static 'css/dashboard.css' %}">
+  <link rel="stylesheet" href="{% static 'css/bracket.css' %}">
+</head>
+<body>
+
+<div class="bg-noise"></div>
+<div class="bg-stripes"></div>
+
+<div class="app">
+
+  {% include 'core/sidebar.html' with sidebar_page='bracket' %}
+
+  <form method="post" action="{% url 'advance_day' %}" id="advanceForm" style="display:none;">
+    {% csrf_token %}
+  </form>
+  <form method="post" action="{% url 'reset_game' %}" id="resetForm" style="display:none;">
+    {% csrf_token %}
+  </form>
+
+  <div class="main">
+    {% include 'core/header.html' %}
+
+    <div class="content">
+
+      {% if season_phase == 'regular' %}
+      <div class="bracket-empty">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+          <path d="M9 3H5a2 2 0 00-2 2v4m6-6h8a2 2 0 012 2v4M9 3v18m0 0h8a2 2 0 002-2v-4M9 21H5a2 2 0 01-2-2v-4m12 0v4m0-4l4-4m-4 4l-4-4"/>
+        </svg>
+        <h2>Temporada Regular en curso</h2>
+        <p>El bracket de Playoffs y Play-In estar&#225; disponible cuando termine la temporada regular.</p>
+      </div>
+      {% endif %}
+
+      {% if season_phase == 'playin' %}
+      <div class="bracket-container">
+        <div class="bracket-title-bar">
+          <h1>Play-In Tournament</h1>
+          <div class="phase-indicator">
+            <span class="phase-dot phase-playin"></span>
+            <span>Play-In en curso</span>
+          </div>
+        </div>
+
+        {% for conf in conferences %}
+        <div class="conference-bracket">
+          <h2 class="conf-title">{{ conf|conference_name }}</h2>
+          <div class="playin-matchups">
+            <div class="playin-series">
+              <div class="series-header">
+                <span class="series-label">7 vs 8</span>
+                <span class="series-type">Single Game</span>
+              </div>
+              {% with label='playin-7-8-'|add:conf|lower %}
+              {% if playin_by_label|get_item:label %}
+              {% for g in playin_by_label|get_item:label %}
+              <div class="game-row">
+                <span class="game-team {% if g.home_team == team %}my-team{% endif %}">
+                  {% if g.home_team.logo %}<img src="{% static g.home_team.logo %}" alt="">{% endif %}
+                  <span>{{ g.home_team.abbreviation }}</span>
+                </span>
+                <span class="game-score">
+                  {% if g.is_played %}
+                  <span class="score {% if g.home_score > g.away_score %}winner{% endif %}">{{ g.home_score }}</span>
+                  <span class="vs">-</span>
+                  <span class="score {% if g.away_score > g.home_score %}winner{% endif %}">{{ g.away_score }}</span>
+                  {% else %}
+                  <span class="pending">vs</span>
+                  {% endif %}
+                </span>
+                <span class="game-team {% if g.away_team == team %}my-team{% endif %}">
+                  {% if g.away_team.logo %}<img src="{% static g.away_team.logo %}" alt="">{% endif %}
+                  <span>{{ g.away_team.abbreviation }}</span>
+                </span>
+              </div>
+              {% endfor %}
+              {% else %}
+              <div class="game-row"><span class="pending">Por determinar</span></div>
+              {% endif %}
+              {% endwith %}
+            </div>
+
+            <div class="playin-series">
+              <div class="series-header">
+                <span class="series-label">9 vs 10</span>
+                <span class="series-type">Single Game</span>
+              </div>
+              {% with label='playin-9-10-'|add:conf|lower %}
+              {% if playin_by_label|get_item:label %}
+              {% for g in playin_by_label|get_item:label %}
+              <div class="game-row">
+                <span class="game-team {% if g.home_team == team %}my-team{% endif %}">
+                  {% if g.home_team.logo %}<img src="{% static g.home_team.logo %}" alt="">{% endif %}
+                  <span>{{ g.home_team.abbreviation }}</span>
+                </span>
+                <span class="game-score">
+                  {% if g.is_played %}
+                  <span class="score {% if g.home_score > g.away_score %}winner{% endif %}">{{ g.home_score }}</span>
+                  <span class="vs">-</span>
+                  <span class="score {% if g.away_score > g.home_score %}winner{% endif %}">{{ g.away_score }}</span>
+                  {% else %}
+                  <span class="pending">vs</span>
+                  {% endif %}
+                </span>
+                <span class="game-team {% if g.away_team == team %}my-team{% endif %}">
+                  {% if g.away_team.logo %}<img src="{% static g.away_team.logo %}" alt="">{% endif %}
+                  <span>{{ g.away_team.abbreviation }}</span>
+                </span>
+              </div>
+              {% endfor %}
+              {% else %}
+              <div class="game-row"><span class="pending">Por determinar</span></div>
+              {% endif %}
+              {% endwith %}
+            </div>
+
+            <div class="playin-series eliminator">
+              <div class="series-header">
+                <span class="series-label">Eliminatoria</span>
+                <span class="series-type">Loser 7v8 vs Winner 9v10</span>
+              </div>
+              {% with label='playin-elim-'|add:conf|lower %}
+              {% if playin_by_label|get_item:label %}
+              {% for g in playin_by_label|get_item:label %}
+              <div class="game-row">
+                <span class="game-team {% if g.home_team == team %}my-team{% endif %}">
+                  {% if g.home_team.logo %}<img src="{% static g.home_team.logo %}" alt="">{% endif %}
+                  <span>{{ g.home_team.abbreviation }}</span>
+                </span>
+                <span class="game-score">
+                  {% if g.is_played %}
+                  <span class="score {% if g.home_score > g.away_score %}winner{% endif %}">{{ g.home_score }}</span>
+                  <span class="vs">-</span>
+                  <span class="score {% if g.away_score > g.home_score %}winner{% endif %}">{{ g.away_score }}</span>
+                  {% else %}
+                  <span class="pending">vs</span>
+                  {% endif %}
+                </span>
+                <span class="game-team {% if g.away_team == team %}my-team{% endif %}">
+                  {% if g.away_team.logo %}<img src="{% static g.away_team.logo %}" alt="">{% endif %}
+                  <span>{{ g.away_team.abbreviation }}</span>
+                </span>
+              </div>
+              {% endfor %}
+              {% else %}
+              <div class="game-row"><span class="pending">Esperando resultados...</span></div>
+              {% endif %}
+              {% endwith %}
+            </div>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+      {% endif %}
+
+      {% if season_phase == 'playoffs' or season_phase == 'finished' %}
+      <div class="bracket-container">
+        <div class="bracket-title-bar">
+          <h1>Playoffs</h1>
+          <div class="phase-indicator">
+            {% if season_phase == 'playoffs' %}
+            <span class="phase-dot phase-playoffs"></span>
+            <span>Playoffs en curso</span>
+            {% else %}
+            <span class="phase-dot phase-finished"></span>
+            <span>Temporada Finalizada</span>
+            {% endif %}
+          </div>
+        </div>
+
+        {% for conf in conferences %}
+        <div class="conference-bracket">
+          <h2 class="conf-title">{{ conf|conference_name }}</h2>
+
+          <div class="playoff-round">
+            <h3 class="round-name">Primera Ronda</h3>
+            <div class="series-list">
+              {% for series_key, games in playoff_by_series.items %}
+              {% if 'playoff-r1' in series_key and conf|lower in series_key %}
+              <div class="series-card">
+                <div class="series-header">
+                  <span class="series-label">{{ series_key|slice:"10:" }}</span>
+                  <span class="series-type">Best of 7</span>
+                </div>
+                {% for g in games %}
+                <div class="game-row">
+                  <span class="game-team {% if g.home_team == team %}my-team{% endif %}">
+                    {% if g.home_team.logo %}<img src="{% static g.home_team.logo %}" alt="">{% endif %}
+                    <span>{{ g.home_team.abbreviation }}</span>
+                  </span>
+                  <span class="game-score">
+                    {% if g.is_played %}
+                    <span class="score {% if g.home_score > g.away_score %}winner{% endif %}">{{ g.home_score }}</span>
+                    <span class="vs">-</span>
+                    <span class="score {% if g.away_score > g.home_score %}winner{% endif %}">{{ g.away_score }}</span>
+                    {% else %}
+                    <span class="pending">vs</span>
+                    {% endif %}
+                  </span>
+                  <span class="game-team {% if g.away_team == team %}my-team{% endif %}">
+                    {% if g.away_team.logo %}<img src="{% static g.away_team.logo %}" alt="">{% endif %}
+                    <span>{{ g.away_team.abbreviation }}</span>
+                  </span>
+                </div>
+                {% endfor %}
+                <div class="series-score">
+                  {% with matchup=series_matchups|get_item:series_key %}
+                  {% if matchup %}
+                  <span class="series-matchup">
+                    <span class="matchup-team {% if matchup.top_wins > matchup.bottom_wins %}series-leader{% endif %}">{{ matchup.top.abbreviation }}</span>
+                    <span class="matchup-score">{{ matchup.top_wins }} - {{ matchup.bottom_wins }}</span>
+                    <span class="matchup-team {% if matchup.bottom_wins > matchup.top_wins %}series-leader{% endif %}">{{ matchup.bottom.abbreviation }}</span>
+                  </span>
+                  {% endif %}
+                  {% endwith %}
+                </div>
+              </div>
+              {% endif %}
+              {% endfor %}
+            </div>
+          </div>
+
+          <div class="playoff-round">
+            <h3 class="round-name">Semifinales de Conferencia</h3>
+            <div class="series-list">
+              {% for series_key, games in playoff_by_series.items %}
+              {% if 'playoff-r2' in series_key and conf|lower in series_key %}
+              <div class="series-card">
+                <div class="series-header">
+                  <span class="series-label">{{ series_key|slice:"10:" }}</span>
+                  <span class="series-type">Best of 7</span>
+                </div>
+                {% for g in games %}
+                <div class="game-row">
+                  <span class="game-team {% if g.home_team == team %}my-team{% endif %}">
+                    {% if g.home_team.logo %}<img src="{% static g.home_team.logo %}" alt="">{% endif %}
+                    <span>{{ g.home_team.abbreviation }}</span>
+                  </span>
+                  <span class="game-score">
+                    {% if g.is_played %}
+                    <span class="score {% if g.home_score > g.away_score %}winner{% endif %}">{{ g.home_score }}</span>
+                    <span class="vs">-</span>
+                    <span class="score {% if g.away_score > g.home_score %}winner{% endif %}">{{ g.away_score }}</span>
+                    {% else %}
+                    <span class="pending">vs</span>
+                    {% endif %}
+                  </span>
+                  <span class="game-team {% if g.away_team == team %}my-team{% endif %}">
+                    {% if g.away_team.logo %}<img src="{% static g.away_team.logo %}" alt="">{% endif %}
+                    <span>{{ g.away_team.abbreviation }}</span>
+                  </span>
+                </div>
+                {% endfor %}
+                <div class="series-score">
+                  {% with matchup=series_matchups|get_item:series_key %}
+                  {% if matchup %}
+                  <span class="series-matchup">
+                    <span class="matchup-team {% if matchup.top_wins > matchup.bottom_wins %}series-leader{% endif %}">{{ matchup.top.abbreviation }}</span>
+                    <span class="matchup-score">{{ matchup.top_wins }} - {{ matchup.bottom_wins }}</span>
+                    <span class="matchup-team {% if matchup.bottom_wins > matchup.top_wins %}series-leader{% endif %}">{{ matchup.bottom.abbreviation }}</span>
+                  </span>
+                  {% endif %}
+                  {% endwith %}
+                </div>
+              </div>
+              {% endif %}
+              {% endfor %}
+              {% if conf == 'East' %}
+              {% if not east_r2_s1 %}
+              <div class="series-card"><div class="game-row"><span class="pending">Esperando resultados de la primera ronda...</span></div></div>
+              {% endif %}
+              {% else %}
+              {% if not west_r2_s1 %}
+              <div class="series-card"><div class="game-row"><span class="pending">Esperando resultados de la primera ronda...</span></div></div>
+              {% endif %}
+              {% endif %}
+            </div>
+          </div>
+
+          <div class="playoff-round">
+            <h3 class="round-name">Finales de Conferencia</h3>
+            <div class="series-list">
+              {% for series_key, games in playoff_by_series.items %}
+              {% if 'playoff-r3' in series_key and conf|lower in series_key %}
+              <div class="series-card">
+                <div class="series-header">
+                  <span class="series-label">{{ series_key|slice:"10:" }}</span>
+                  <span class="series-type">Best of 7</span>
+                </div>
+                {% for g in games %}
+                <div class="game-row">
+                  <span class="game-team {% if g.home_team == team %}my-team{% endif %}">
+                    {% if g.home_team.logo %}<img src="{% static g.home_team.logo %}" alt="">{% endif %}
+                    <span>{{ g.home_team.abbreviation }}</span>
+                  </span>
+                  <span class="game-score">
+                    {% if g.is_played %}
+                    <span class="score {% if g.home_score > g.away_score %}winner{% endif %}">{{ g.home_score }}</span>
+                    <span class="vs">-</span>
+                    <span class="score {% if g.away_score > g.home_score %}winner{% endif %}">{{ g.away_score }}</span>
+                    {% else %}
+                    <span class="pending">vs</span>
+                    {% endif %}
+                  </span>
+                  <span class="game-team {% if g.away_team == team %}my-team{% endif %}">
+                    {% if g.away_team.logo %}<img src="{% static g.away_team.logo %}" alt="">{% endif %}
+                    <span>{{ g.away_team.abbreviation }}</span>
+                  </span>
+                </div>
+                {% endfor %}
+                <div class="series-score">
+                  {% with matchup=series_matchups|get_item:series_key %}
+                  {% if matchup %}
+                  <span class="series-matchup">
+                    <span class="matchup-team {% if matchup.top_wins > matchup.bottom_wins %}series-leader{% endif %}">{{ matchup.top.abbreviation }}</span>
+                    <span class="matchup-score">{{ matchup.top_wins }} - {{ matchup.bottom_wins }}</span>
+                    <span class="matchup-team {% if matchup.bottom_wins > matchup.top_wins %}series-leader{% endif %}">{{ matchup.bottom.abbreviation }}</span>
+                  </span>
+                  {% endif %}
+                  {% endwith %}
+                </div>
+              </div>
+              {% endif %}
+              {% endfor %}
+              {% if conf == 'East' %}
+              {% if not east_r3_s1 %}
+              <div class="series-card"><div class="game-row"><span class="pending">Esperando resultados de semifinales...</span></div></div>
+              {% endif %}
+              {% else %}
+              {% if not west_r3_s1 %}
+              <div class="series-card"><div class="game-row"><span class="pending">Esperando resultados de semifinales...</span></div></div>
+              {% endif %}
+              {% endif %}
+            </div>
+          </div>
+        </div>
+        {% endfor %}
+
+        <div class="conference-bracket finals-bracket">
+          <h2 class="conf-title finals-title">NBA Finals</h2>
+          <div class="series-list">
+            {% for series_key, games in playoff_by_series.items %}
+            {% if 'playoff-r4' in series_key %}
+            <div class="series-card finals-card">
+              <div class="series-header">
+                <span class="series-label">Final NBA</span>
+                <span class="series-type">Best of 7</span>
+              </div>
+              {% for g in games %}
+              <div class="game-row">
+                <span class="game-team {% if g.home_team == team %}my-team{% endif %}">
+                  {% if g.home_team.logo %}<img src="{% static g.home_team.logo %}" alt="">{% endif %}
+                  <span>{{ g.home_team.abbreviation }}</span>
+                </span>
+                <span class="game-score">
+                  {% if g.is_played %}
+                  <span class="score {% if g.home_score > g.away_score %}winner{% endif %}">{{ g.home_score }}</span>
+                  <span class="vs">-</span>
+                  <span class="score {% if g.away_score > g.home_score %}winner{% endif %}">{{ g.away_score }}</span>
+                  {% else %}
+                  <span class="pending">vs</span>
+                  {% endif %}
+                </span>
+                <span class="game-team {% if g.away_team == team %}my-team{% endif %}">
+                  {% if g.away_team.logo %}<img src="{% static g.away_team.logo %}" alt="">{% endif %}
+                  <span>{{ g.away_team.abbreviation }}</span>
+                </span>
+              </div>
+              {% endfor %}
+              <div class="series-score">
+                {% with matchup=series_matchups|get_item:series_key %}
+                {% if matchup %}
+                <span class="series-matchup">
+                  <span class="matchup-team {% if matchup.top_wins > matchup.bottom_wins %}series-leader{% endif %}">{{ matchup.top.abbreviation }}</span>
+                  <span class="matchup-score">{{ matchup.top_wins }} - {{ matchup.bottom_wins }}</span>
+                  <span class="matchup-team {% if matchup.bottom_wins > matchup.top_wins %}series-leader{% endif %}">{{ matchup.bottom.abbreviation }}</span>
+                </span>
+                {% endif %}
+                {% endwith %}
+              </div>
+            </div>
+            {% endif %}
+            {% endfor %}
+            {% if not finals_exist %}
+            <div class="series-card finals-card">
+              <div class="series-header">
+                <span class="series-label">Final NBA</span>
+                <span class="series-type">Por determinar</span>
+              </div>
+              <div class="game-row"><span class="pending">Esperando finales de conferencia...</span></div>
+            </div>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+      {% endif %}
+
+    </div>
+  </div>
+</div>
+
+<script>
+document.getElementById('btnAdvance')?.addEventListener('click', function(e) {
+  if (this.tagName === 'A') return;
+  document.getElementById('advanceForm').submit();
+});
+</script>
+
+</body>
+</html>

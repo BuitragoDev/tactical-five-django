@@ -1,0 +1,309 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Palmares · Tactical Five</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="{% static 'css/dashboard.css' %}">
+  <link rel="stylesheet" href="{% static 'css/palmares.css' %}">
+</head>
+<body>
+
+<div class="bg-noise"></div>
+<div class="bg-stripes"></div>
+
+<div class="app">
+
+  {% include 'core/sidebar.html' with sidebar_page='palmares' %}
+
+  <form method="post" action="{% url 'advance_day' %}" id="advanceForm" style="display:none;">
+    {% csrf_token %}
+  </form>
+
+  <div class="main">
+    {% include 'core/header.html' %}
+
+    <div class="content">
+      <div class="palmares-container">
+        <div class="palmares-header">
+          <h1>Palmares</h1>
+        </div>
+
+        <div class="tabs-bar">
+          <button class="tab-btn active" data-tab="teams">Equipos</button>
+          <button class="tab-btn" data-tab="players">Jugadores</button>
+          <button class="tab-btn" data-tab="quintets">Quintetos</button>
+        </div>
+
+        <!-- TAB: EQUIPOS -->
+        <div class="tab-panel active" id="tab-teams">
+          <div class="palmares-split">
+            <div class="palmares-left">
+              <h2 class="palmares-section-title">Clasificacion por Titulos</h2>
+              <div class="champs-list">
+                {% for t in team_champs %}
+                <div class="champ-row">
+                  <span class="champ-rank">{{ forloop.counter }}</span>
+                  {% if t.logo %}
+                  <img src="{% static t.logo %}" alt="{{ t.abbreviation }}" class="champ-logo">
+                  {% endif %}
+                  <span class="champ-name">{{ t.name }}</span>
+                  <span class="champ-count">{{ t.num_championships }}</span>
+                </div>
+                {% empty %}
+                <div class="no-data">Aun no hay campeonatos registrados</div>
+                {% endfor %}
+              </div>
+            </div>
+            <div class="palmares-right">
+              <h2 class="palmares-section-title">Historial de Finales</h2>
+              <table class="palmares-table">
+                <thead>
+                  <tr>
+                    <th>Temporada</th>
+                    <th>Campeon</th>
+                    <th>Finalista</th>
+                    <th>Resultado</th>
+                    <th>MVP Finales</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {% for r in records %}
+                  <tr>
+                    <td class="season-cell">{{ r.season.year_start }}-{{ r.season.year_end }}</td>
+                    <td class="champ-cell">
+                      {% if r.champion %}
+                      {% if r.champion.logo %}
+                      <img src="{% static r.champion.logo %}" alt="" class="mini-logo">
+                      {% endif %}
+                      {{ r.champion.name }}
+                      {% else %}
+                      -
+                      {% endif %}
+                    </td>
+                    <td class="finalist-cell">
+                      {% if r.finalist %}
+                      {% if r.finalist.logo %}
+                      <img src="{% static r.finalist.logo %}" alt="" class="mini-logo">
+                      {% endif %}
+                      {{ r.finalist.name }}
+                      {% else %}
+                      -
+                      {% endif %}
+                    </td>
+                    <td class="result-cell">{{ r.finals_result }}</td>
+                    <td class="mvp-cell">
+                      {% if r.finals_mvp %}
+                      {{ r.finals_mvp.first_name }} {{ r.finals_mvp.last_name }}
+                      {% else %}
+                      -
+                      {% endif %}
+                    </td>
+                  </tr>
+                  {% empty %}
+                  <tr><td colspan="5" class="no-data-cell">Aun no hay finales registradas</td></tr>
+                  {% endfor %}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- TAB: JUGADORES -->
+        <div class="tab-panel" id="tab-players">
+          <div class="palmares-split">
+            <div class="palmares-left">
+              <h2 class="palmares-section-title">Clasificacion MVP</h2>
+              <div class="champs-list">
+                {% for p in player_mvps %}
+                <div class="champ-row">
+                  <span class="champ-rank">{{ forloop.counter }}</span>
+                  <span class="champ-name">{{ p.first_name }} {{ p.last_name }}</span>
+                  {% if p.team %}
+                  {% if p.team.logo %}
+                  <img src="{% static p.team.logo %}" alt="" class="champ-logo">
+                  {% endif %}
+                  {% endif %}
+                  <span class="champ-count">{{ p.mvp_count }}</span>
+                </div>
+                {% empty %}
+                <div class="no-data">Aun no hay MVPs registrados</div>
+                {% endfor %}
+              </div>
+            </div>
+            <div class="palmares-right">
+              <h2 class="palmares-section-title">Historial de Premios</h2>
+              <table class="palmares-table">
+                <thead>
+                  <tr>
+                    <th>Temporada</th>
+                    <th>MVP Temporada</th>
+                    <th>Rating</th>
+                    <th>Rookie del Ano</th>
+                    <th>Rating</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {% for r in records %}
+                  <tr>
+                    <td class="season-cell">{{ r.season.year_start }}-{{ r.season.year_end }}</td>
+                    <td class="mvp-cell">
+                      {% if r.season_mvp %}
+                      {% if r.season_mvp.team and r.season_mvp.team.logo %}
+                      <img src="{% static r.season_mvp.team.logo %}" alt="" class="mini-logo">
+                      {% endif %}
+                      {{ r.season_mvp.first_name }} {{ r.season_mvp.last_name }}
+                      {% else %}
+                      -
+                      {% endif %}
+                    </td>
+                    <td class="rating-cell">
+                      {% if r.season_mvp_rating %}{{ r.season_mvp_rating|floatformat:1 }}{% else %}-{% endif %}
+                    </td>
+                    <td class="rookie-cell">
+                      {% if r.rookie_of_year %}
+                      {% if r.rookie_of_year.team and r.rookie_of_year.team.logo %}
+                      <img src="{% static r.rookie_of_year.team.logo %}" alt="" class="mini-logo">
+                      {% endif %}
+                      {{ r.rookie_of_year.first_name }} {{ r.rookie_of_year.last_name }}
+                      {% else %}
+                      -
+                      {% endif %}
+                    </td>
+                    <td class="rating-cell">
+                      {% if r.rookie_rating %}{{ r.rookie_rating|floatformat:1 }}{% else %}-{% endif %}
+                    </td>
+                  </tr>
+                  {% empty %}
+                  <tr><td colspan="5" class="no-data-cell">Aun no hay premios registrados</td></tr>
+                  {% endfor %}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- TAB: QUINTETOS -->
+        <div class="tab-panel" id="tab-quintets">
+          <div class="palmares-split">
+            <div class="palmares-left">
+              <h2 class="palmares-section-title">Apariciones en Quinteto</h2>
+              <div class="champs-list">
+                {% for p in all_star_appearances %}
+                <div class="champ-row">
+                  <span class="champ-rank">{{ forloop.counter }}</span>
+                  <span class="champ-name">{{ p.first_name }} {{ p.last_name }}</span>
+                  {% if p.team %}
+                  {% if p.team.logo %}
+                  <img src="{% static p.team.logo %}" alt="" class="champ-logo">
+                  {% endif %}
+                  {% endif %}
+                  <span class="champ-count">{{ p.all_star_count }}</span>
+                </div>
+                {% empty %}
+                <div class="no-data">Aun no hay quintetos registrados</div>
+                {% endfor %}
+              </div>
+            </div>
+            <div class="palmares-right">
+              <h2 class="palmares-section-title">Historial de Quintetos</h2>
+              <table class="palmares-table">
+                <thead>
+                  <tr>
+                    <th>Temporada</th>
+                    <th>PG</th>
+                    <th>SG</th>
+                    <th>SF</th>
+                    <th>PF</th>
+                    <th>C</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {% for r in records %}
+                  <tr>
+                    <td class="season-cell">{{ r.season.year_start }}-{{ r.season.year_end }}</td>
+                    <td class="quintet-cell">
+                      {% if r.all_star_pg %}
+                      {% if r.all_star_pg.team and r.all_star_pg.team.logo %}
+                      <img src="{% static r.all_star_pg.team.logo %}" alt="" class="mini-logo">
+                      {% endif %}
+                      {{ r.all_star_pg.first_name }} {{ r.all_star_pg.last_name }}
+                      {% else %}
+                      -
+                      {% endif %}
+                    </td>
+                    <td class="quintet-cell">
+                      {% if r.all_star_sg %}
+                      {% if r.all_star_sg.team and r.all_star_sg.team.logo %}
+                      <img src="{% static r.all_star_sg.team.logo %}" alt="" class="mini-logo">
+                      {% endif %}
+                      {{ r.all_star_sg.first_name }} {{ r.all_star_sg.last_name }}
+                      {% else %}
+                      -
+                      {% endif %}
+                    </td>
+                    <td class="quintet-cell">
+                      {% if r.all_star_sf %}
+                      {% if r.all_star_sf.team and r.all_star_sf.team.logo %}
+                      <img src="{% static r.all_star_sf.team.logo %}" alt="" class="mini-logo">
+                      {% endif %}
+                      {{ r.all_star_sf.first_name }} {{ r.all_star_sf.last_name }}
+                      {% else %}
+                      -
+                      {% endif %}
+                    </td>
+                    <td class="quintet-cell">
+                      {% if r.all_star_pf %}
+                      {% if r.all_star_pf.team and r.all_star_pf.team.logo %}
+                      <img src="{% static r.all_star_pf.team.logo %}" alt="" class="mini-logo">
+                      {% endif %}
+                      {{ r.all_star_pf.first_name }} {{ r.all_star_pf.last_name }}
+                      {% else %}
+                      -
+                      {% endif %}
+                    </td>
+                    <td class="quintet-cell">
+                      {% if r.all_star_c %}
+                      {% if r.all_star_c.team and r.all_star_c.team.logo %}
+                      <img src="{% static r.all_star_c.team.logo %}" alt="" class="mini-logo">
+                      {% endif %}
+                      {{ r.all_star_c.first_name }} {{ r.all_star_c.last_name }}
+                      {% else %}
+                      -
+                      {% endif %}
+                    </td>
+                  </tr>
+                  {% empty %}
+                  <tr><td colspan="6" class="no-data-cell">Aun no hay quintetos registrados</td></tr>
+                  {% endfor %}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+document.querySelectorAll('.tab-btn').forEach(btn => {
+  btn.addEventListener('click', function() {
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+    this.classList.add('active');
+    document.getElementById('tab-' + this.dataset.tab).classList.add('active');
+  });
+});
+document.getElementById('btnAdvance')?.addEventListener('click', function(e) {
+  if (this.tagName === 'A') return;
+  document.getElementById('advanceForm').submit();
+});
+</script>
+
+</body>
+</html>

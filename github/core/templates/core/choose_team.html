@@ -1,0 +1,381 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>{% if is_dismissal %}Nueva Carrera{% else %}Elegir Equipo{% endif %} · Tactical Five</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="{% static 'css/choose_team.css' %}">
+</head>
+<body>
+
+<div class="bg-noise"></div>
+<div class="bg-stripes"></div>
+
+<div class="page">
+
+  <!-- ── HEADER ── -->
+  <header>
+    <div class="header-left">
+      <a class="btn-back" href="{% url 'home' %}">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+          <path d="M19 12H5M12 19l-7-7 7-7"/>
+        </svg>
+        Volver
+      </a>
+      <div class="header-title">{{ page_title }} <span>{{ page_subtitle }}</span>{% if not is_dismissal %} · Seleccionar Equipo{% endif %}</div>
+    </div>
+
+    {% if is_dismissal %}
+    <a href="{% url 'dismissal_start_new' %}" class="btn-continue" id="btnContinue" onclick="return checkTeamSelected();">
+      CONTINUAR
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+        <path d="M5 12h14M12 5l7 7-7 7"/>
+      </svg>
+    </a>
+    {% else %}
+    <form method="post" id="continueForm">
+      {% csrf_token %}
+      <input type="hidden" name="team_id" id="hiddenTeamId"/>
+      <input type="hidden" name="manager_name" id="hiddenManagerName"/>
+      <button type="submit" class="btn-continue" id="btnContinue">
+        Continuar
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+          <path d="M5 12h14M12 5l7 7-7 7"/>
+        </svg>
+      </button>
+    </form>
+    {% endif %}
+  </header>
+
+  <!-- ── BARRA MANAGER ── -->
+  <div class="manager-bar" {% if is_dismissal %}style="display:none;"{% endif %}>
+    <div class="manager-input-wrap">
+      <span class="manager-input-label">Nombre del Manager</span>
+      <input
+        class="manager-input"
+        id="managerName"
+        type="text"
+        maxlength="30"
+        placeholder="Escribe tu nombre..."
+        autocomplete="off"
+      />
+    </div>
+  </div>
+
+  <!-- ── CUERPO ── -->
+  <div class="body">
+
+    <!-- Panel central: grid de logos -->
+    <div class="center-panel">
+      <div class="center-top">
+        <button class="filter-btn active" id="filterAll"  onclick="filterTeams('all')">Todos (30)</button>
+        <button class="filter-btn"        id="filterEast" onclick="filterTeams('East')">Este</button>
+        <button class="filter-btn"        id="filterWest" onclick="filterTeams('West')">Oeste</button>
+      </div>
+
+      <div class="teams-grid" id="teamsGrid">
+        {% for team in teams %}
+          <div
+            class="team-tile{% if not team.selectable %} disabled{% endif %}"
+            data-id="{{ team.pk }}"
+            data-conf="{{ team.conference }}"
+            data-selectable="{{ team.selectable }}"
+            onclick="selectTeam({{ team.pk }})"
+            title="{{ team.name }}"
+          >
+            {% if team.logo %}
+              <img src="{% static team.logo %}" alt="{{ team.name }}">
+            {% else %}
+              <span style="font-family:'Oswald',sans-serif;font-size:16px;font-weight:700;color:var(--text-dim);">{{ team.abbreviation }}</span>
+            {% endif %}
+          </div>
+        {% endfor %}
+      </div>
+    </div>
+
+    <!-- Panel derecho: info del equipo seleccionado -->
+    <div class="info-panel" id="infoPanel">
+
+      <!-- Estado vacío (inicial) -->
+      <div class="info-empty" id="infoEmpty">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+          <circle cx="12" cy="12" r="10"/>
+          <path d="M12 8v4l3 3"/>
+        </svg>
+        <p>Selecciona un equipo</p>
+      </div>
+
+      <!-- Contenido dinámico -->
+      <div id="infoContent" style="display:none;">
+
+        <div class="info-header">
+          <img class="info-logo" id="infoLogo" src="" alt="">
+          <div>
+            <div class="info-team-name" id="infoName"></div>
+            <div class="info-team-sub"  id="infoSub"></div>
+          </div>
+        </div>
+
+        <div class="info-table">
+          <div class="info-row">
+            <span class="info-key">Ciudad</span>
+            <span class="info-val" id="iCity"></span>
+          </div>
+          <div class="info-row">
+            <span class="info-key">Conferencia</span>
+            <span class="info-val" id="iConf"></span>
+          </div>
+          <div class="info-row">
+            <span class="info-key">División</span>
+            <span class="info-val" id="iDiv"></span>
+          </div>
+          <div class="info-row">
+            <span class="info-key">Propietario</span>
+            <span class="info-val" id="iOwner"></span>
+          </div>
+          <div class="info-row">
+            <span class="info-key">Pabellón</span>
+            <span class="info-val" id="iArena"></span>
+          </div>
+          <div class="info-row">
+            <span class="info-key">Aforo</span>
+            <span class="info-val" id="iCap"></span>
+          </div>
+          <div class="info-row">
+            <span class="info-key">Reputación</span>
+            <span class="info-val stars" id="iRep"></span>
+          </div>
+          <div class="info-row">
+            <span class="info-key">Instalaciones</span>
+            <span class="info-val stars" id="iFac"></span>
+          </div>
+          <div class="info-row">
+            <span class="info-key">Presupuesto</span>
+            <span class="info-val" id="iBudget"></span>
+          </div>
+          <div class="info-row">
+            <span class="info-key">Margen salarial</span>
+            <span class="info-val" id="iCapMargin"></span>
+          </div>
+        </div>
+
+        <div class="info-ratings">
+          <div class="rating-box">
+            <div class="rating-label">Ataque</div>
+            <div class="rating-circle">
+              <svg viewBox="0 0 54 54">
+                <circle class="track" cx="27" cy="27" r="23"/>
+                <circle class="fill"  cx="27" cy="27" r="23" id="circAtk"
+                  stroke="#4a80f0"
+                  stroke-dasharray="144.51"
+                  stroke-dashoffset="144.51"/>
+              </svg>
+              <div class="rating-number" id="numAtk">–</div>
+            </div>
+          </div>
+          <div class="rating-box">
+            <div class="rating-label">Defensa</div>
+            <div class="rating-circle">
+              <svg viewBox="0 0 54 54">
+                <circle class="track" cx="27" cy="27" r="23"/>
+                <circle class="fill"  cx="27" cy="27" r="23" id="circDef"
+                  stroke="#27ae60"
+                  stroke-dasharray="144.51"
+                  stroke-dashoffset="144.51"/>
+              </svg>
+              <div class="rating-number" id="numDef">–</div>
+            </div>
+          </div>
+          <div class="rating-box">
+            <div class="rating-label">Overall</div>
+            <div class="rating-circle">
+              <svg viewBox="0 0 54 54">
+                <circle class="track" cx="27" cy="27" r="23"/>
+                <circle class="fill"  cx="27" cy="27" r="23" id="circOvr"
+                  stroke="#d4a017"
+                  stroke-dasharray="144.51"
+                  stroke-dashoffset="144.51"/>
+              </svg>
+              <div class="rating-number" id="numOvr">–</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="info-jerseys">
+          <div class="jersey-wrap">
+            <img id="jerseyHome" src="" alt="Local">
+          </div>
+          <div class="jersey-wrap">
+            <img id="jerseyAway" src="" alt="Visitante">
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+  </div><!-- .body -->
+</div><!-- .page -->
+
+<!-- Datos de equipos para JS -->
+<script>
+const STATIC = "{% get_static_prefix %}";
+const TEAMS  = {
+  {% for team in teams %}
+  {{ team.pk }}: {
+    name:       "{{ team.name }}",
+    abbr:       "{{ team.abbreviation }}",
+    city:       "{{ team.city }}",
+    conf:       "{{ team.conference }}",
+    div:        "{{ team.division }}",
+    owner:      "{{ team.owner }}",
+    arena:      "{{ team.arena }}",
+    capacity:   {{ team.capacity }},
+    rep:        {{ team.reputation }},
+    fac:        {{ team.facilities }},
+    budget:     {{ team.budget }},
+    payroll:    {{ team.team_payroll|default:0 }},
+    cap_margin: {{ team.team_cap_margin|default:0 }},
+    attack:     {{ team.attack }},
+    defense:    {{ team.defense }},
+    overall:    {{ team.overall }},
+    logo:       "{{ team.logo }}",
+    jerseyHome: "{{ team.jersey_home }}",
+    jerseyAway: "{{ team.jersey_away }}"
+  }{% if not forloop.last %},{% endif %}
+  {% endfor %}
+};
+
+let selectedId   = null;
+let managerReady = {% if is_dismissal %}true{% else %}false{% endif %};
+let teamReady    = false;
+
+function stars(n) {
+  let s = '';
+  for (let i = 1; i <= 5; i++) {
+    s += `<svg class="star ${i<=n?'on':'off'}" viewBox="0 0 24 24"
+            fill="${i<=n?'currentColor':'none'}" stroke="currentColor" stroke-width="1.5">
+            <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02
+                             12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
+          </svg>`;
+  }
+  return s;
+}
+
+function setCircle(id, val) {
+  const circ = document.getElementById(id);
+  const r    = 23;
+  const total = 2 * Math.PI * r;          // 144.51
+  const offset = total - (val / 99) * total;
+  circ.style.strokeDashoffset = offset;
+}
+
+function selectTeam(id) {
+  const el = document.querySelector(`.team-tile[data-id="${id}"]`);
+  if (!el || el.dataset.selectable === 'False') return;
+  
+  selectedId = id;
+  const t = TEAMS[id];
+
+  // Marcar activo en grid
+  document.querySelectorAll('.team-tile').forEach(el =>
+    el.classList.toggle('active', +el.dataset.id === id));
+
+  // Rellenar info panel
+  document.getElementById('infoEmpty').style.display   = 'none';
+  document.getElementById('infoContent').style.display = 'block';
+
+  const divMap = { 'Atlantic': 'Atlántico', 'Central': 'Central', 'Southeast': 'Sureste', 'Northwest': 'Noroeste', 'Pacific': 'Pacífico', 'Southwest': 'Suroeste' };
+  const tDiv = divMap[t.div] || t.div;
+
+  document.getElementById('infoName').textContent  = t.name;
+  document.getElementById('infoSub').textContent   = `${t.conf === 'East' ? 'Este' : 'Oeste'} · ${tDiv}`;
+  document.getElementById('iCity').textContent     = t.city;
+  document.getElementById('iConf').textContent     = t.conf === 'East' ? 'Este' : 'Oeste';
+  document.getElementById('iDiv').textContent      = tDiv;
+  document.getElementById('iOwner').textContent    = t.owner;
+  document.getElementById('iArena').textContent    = t.arena;
+  document.getElementById('iCap').textContent      = t.capacity.toLocaleString();
+  document.getElementById('iRep').innerHTML        = stars(t.rep);
+  document.getElementById('iFac').innerHTML        = stars(t.fac);
+  document.getElementById('iBudget').textContent   = '$' + (t.budget/1e6).toFixed(0) + 'M';
+  const marginEl = document.getElementById('iCapMargin');
+  if (t.cap_margin >= 0) {
+    marginEl.textContent = '+$' + (t.cap_margin/1e6).toFixed(1) + 'M';
+    marginEl.style.color = 'var(--green)';
+  } else {
+    marginEl.textContent = '-$' + (Math.abs(t.cap_margin)/1e6).toFixed(1) + 'M';
+    marginEl.style.color = 'var(--red)';
+  }
+
+  document.getElementById('numAtk').textContent = t.attack;
+  document.getElementById('numDef').textContent = t.defense;
+  document.getElementById('numOvr').textContent = t.overall;
+  setTimeout(() => {
+    setCircle('circAtk', t.attack);
+    setCircle('circDef', t.defense);
+    setCircle('circOvr', t.overall);
+  }, 50);
+
+  const logo = t.logo ? STATIC + t.logo : '';
+  document.getElementById('infoLogo').src    = logo;
+  document.getElementById('jerseyHome').src  = t.jerseyHome ? STATIC + t.jerseyHome : '';
+  document.getElementById('jerseyAway').src  = t.jerseyAway ? STATIC + t.jerseyAway : '';
+
+
+
+  teamReady = true;
+  updateContinue();
+}
+
+function filterTeams(conf) {
+  document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById(conf === 'all' ? 'filterAll' : conf === 'East' ? 'filterEast' : 'filterWest')
+          .classList.add('active');
+
+  document.querySelectorAll('.team-tile').forEach(tile => {
+    tile.style.display = (conf === 'all' || tile.dataset.conf === conf) ? '' : 'none';
+  });
+}
+
+function updateContinue() {
+  const btn = document.getElementById('btnContinue');
+  const ready = teamReady && managerReady;
+  btn.classList.toggle('active', ready);
+}
+
+{% if not is_dismissal %}
+document.getElementById('managerName').addEventListener('input', function() {
+  managerReady = this.value.trim().length >= 2;
+  updateContinue();
+});
+
+document.getElementById('continueForm').addEventListener('submit', function(e) {
+  const name = document.getElementById('managerName').value.trim();
+  if (!selectedId || name.length < 2) { e.preventDefault(); return; }
+  document.getElementById('hiddenTeamId').value      = selectedId;
+  document.getElementById('hiddenManagerName').value = name;
+});
+{% else %}
+function checkTeamSelected() {
+  if (!selectedId) {
+    alert('Selecciona un equipo primero');
+    return false;
+  }
+  fetch('{% url "dismissal_select_team" %}', {
+    method: 'POST',
+    headers: {
+      'X-CSRFToken': '{{ csrf_token }}',
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({ team_id: selectedId }),
+  });
+  return true;
+}
+{% endif %}
+</script>
+
+</body>
+</html>

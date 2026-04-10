@@ -1,0 +1,211 @@
+{% load static humanize %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Fin de Temporada · Tactical Five</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Roboto+Condensed:wght@300;400;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="{% static 'css/end_season.css' %}">
+</head>
+<body>
+
+<div class="bg-noise"></div>
+<div class="bg-stripes"></div>
+
+<div class="app">
+
+  <div class="main">
+    <header class="top-header">
+      <div class="header-left">
+        {% if team.logo %}
+        <img src="{% static team.logo %}" alt="{{ team.name }}" class="header-logo">
+        {% endif %}
+        <div class="header-info">
+          <div class="header-team-name">{{ team.name }} <span class="header-subtitle">(FIN DE TEMPORADA)</span></div>
+          <div class="header-manager">Manager: <strong>{{ manager_name }}</strong></div>
+        </div>
+      </div>
+      <div class="header-right">
+        <div class="header-season">
+          <span class="season-label">Temporada {{ season_label }}</span>
+        </div>
+        <div class="header-date">{{ current_date }}</div>
+        <a href="{% url 'next_season' %}" class="btn-header-back" id="btnNextSeason" style="opacity:0.5;pointer-events:none;">
+          PRÓXIMA TEMPORADA
+        </a>
+      </div>
+    </header>
+
+    <div class="content">
+      <div class="end-season-container">
+        <div class="end-season-header">
+          <h1>Fin de Temporada</h1>
+          <span class="season-tag">{{ season_label }}</span>
+        </div>
+
+        <div class="end-season-split">
+          <!-- LEFT: Retiring + Expiring -->
+          <div class="es-lists-col">
+            <div class="es-panel">
+              <h2 class="es-panel-title">Jugadores que se Retiran</h2>
+              <div class="es-player-list">
+                {% for p in retiring %}
+                <div class="es-player-row">
+                  {% if p.team and p.team.logo %}
+                  <img src="{% static p.team.logo %}" alt="" class="es-mini-logo">
+                  {% endif %}
+                  <span class="es-player-name">{{ p.first_name }} {{ p.last_name }}</span>
+                  <span class="es-player-pos">{{ p.position }}</span>
+                  <span class="es-player-age">{{ p.age }} años</span>
+                </div>
+                {% empty %}
+                <div class="es-empty">No hay jugadores que se retiren esta temporada</div>
+                {% endfor %}
+              </div>
+            </div>
+
+            <div class="es-panel" id="expiringPanel">
+              <div class="es-panel-title-row">
+                <h2 class="es-panel-title">Contratos Expirando (1 año)</h2>
+                {% if expiring %}
+                <form method="post" action="{% url 'end_season_renew_all' %}">
+                  {% csrf_token %}
+                  <button type="submit" class="btn-renew-all">RENOVAR TODOS</button>
+                </form>
+                {% endif %}
+              </div>
+              <div class="es-player-list">
+                {% for p in expiring %}
+                <div class="es-player-row expiring-row">
+                  {% if p.team and p.team.logo %}
+                  <img src="{% static p.team.logo %}" alt="" class="es-mini-logo">
+                  {% endif %}
+                  <span class="es-player-name">{{ p.first_name }} {{ p.last_name }}</span>
+                  <span class="es-player-pos">{{ p.position }}</span>
+                  <span class="es-player-salary">${{ p.salary|intcomma }}</span>
+                  <form method="post" action="{% url 'end_season_renew' p.pk %}" style="display:inline;">
+                    {% csrf_token %}
+                    <button type="submit" class="btn-renew">Renovar</button>
+                  </form>
+                </div>
+                {% empty %}
+                <div class="es-empty">No hay contratos expirando</div>
+                {% endfor %}
+              </div>
+            </div>
+          </div>
+
+          <!-- RIGHT: Draft Button -->
+          <div class="es-draft-col">
+            <div class="es-draft-section">
+              <button class="btn-draft" id="btnDraft">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>
+                </svg>
+                EMPEZAR DRAFT {{ draft_year }}
+              </button>
+            </div>
+            <div class="es-draft-wrapper" id="draftWrapper" style="display: none;">
+              <h3 class="draft-fixed-title">DRAFT {{ draft_year }}</h3>
+              <div class="es-draft-content" id="draftContent"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+document.getElementById('btnDraft').addEventListener('click', function() {
+  const btn = this;
+  const wrapper = document.getElementById('draftWrapper');
+  const content = document.getElementById('draftContent');
+  
+  if (content.dataset.loaded === 'true') return;
+  
+  btn.disabled = true;
+  btn.textContent = 'GENERANDO...';
+  
+  fetch('{% url "end_season_draft" %}', {
+    method: 'POST',
+    headers: {
+      'X-CSRFToken': '{{ csrf_token }}',
+      'Content-Type': 'application/json',
+    },
+  })
+  .then(r => r.json())
+  .then(data => {
+    content.dataset.loaded = 'true';
+    wrapper.style.display = 'block';
+    
+    // Desactivar todos los botones Renovar y ocultar el panel
+    document.querySelectorAll('.btn-renew').forEach(btn => {
+      btn.disabled = true;
+      btn.style.opacity = '0.4';
+      btn.style.cursor = 'not-allowed';
+    });
+    const expiringPanel = document.getElementById('expiringPanel');
+    if (expiringPanel) {
+      expiringPanel.style.display = 'none';
+    }
+    
+    let html = '<div class="draft-results">';
+    
+    data.forEach(pick => {
+      html += `
+        <div class="draft-pick">
+          <div class="draft-pick-header">
+            <span class="draft-pick-num">#${pick.pick}</span>
+            <div class="draft-team">
+              ${pick.team_logo ? `<img src="/static/${pick.team_logo}" alt="">` : ''}
+              <span>${pick.team_name}</span>
+            </div>
+          </div>
+          <div class="draft-player-info">
+            <span class="draft-player-name">${pick.name}</span>
+            <span class="draft-player-pos">${pick.position}</span>
+            <span class="draft-player-detail">${pick.age} años · ${pick.height}cm · ${pick.weight}kg · ${pick.nationality}</span>
+            <span class="draft-player-ovr">OVR: ${pick.overall}</span>
+          </div>
+          <div class="draft-player-attrs">
+            <div class="draft-attr"><span>VEL</span><span>${pick.speed}</span></div>
+            <div class="draft-attr"><span>TIR</span><span>${pick.shooting}</span></div>
+            <div class="draft-attr"><span>3PT</span><span>${pick.three_point}</span></div>
+            <div class="draft-attr"><span>PAS</span><span>${pick.passing}</span></div>
+            <div class="draft-attr"><span>MAN</span><span>${pick.ball_handling}</span></div>
+            <div class="draft-attr"><span>DEF</span><span>${pick.defense}</span></div>
+            <div class="draft-attr"><span>REB</span><span>${pick.rebounding}</span></div>
+            <div class="draft-attr"><span>ATL</span><span>${pick.athleticism}</span></div>
+            <div class="draft-attr"><span>IQ</span><span>${pick.iq}</span></div>
+            <div class="draft-attr"><span>ROB</span><span>${pick.steals}</span></div>
+            <div class="draft-attr"><span>TAP</span><span>${pick.blocks}</span></div>
+          </div>
+        </div>
+      `;
+    });
+    
+    html += '</div>';
+    content.innerHTML = html;
+    btn.textContent = 'DRAFT COMPLETADO';
+    
+    // Enable next season button
+    const nextBtn = document.getElementById('btnNextSeason');
+    if (nextBtn) {
+      nextBtn.style.opacity = '1';
+      nextBtn.style.pointerEvents = 'auto';
+    }
+  })
+  .catch(err => {
+    content.innerHTML = '<div class="draft-error">Error al generar el draft</div>';
+    btn.disabled = false;
+    btn.textContent = 'EMPEZAR DRAFT {{ draft_year }}';
+  });
+});
+</script>
+
+</body>
+</html>

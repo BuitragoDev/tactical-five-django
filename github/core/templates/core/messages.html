@@ -1,0 +1,86 @@
+{% load static humanize %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Mensajes · Tactical Five</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Roboto+Condensed:wght@300;400;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="{% static 'css/messages.css' %}">
+</head>
+<body>
+
+<div class="bg-noise"></div>
+<div class="bg-stripes"></div>
+
+<div class="app">
+
+  {% include 'core/sidebar.html' with sidebar_page='messages' %}
+
+<form method="post" action="{% url 'advance_day' %}" id="advanceForm" style="display:none;">
+  {% csrf_token %}
+</form>
+<form method="post" action="{% url 'reset_game' %}" id="resetForm" style="display:none;">
+  {% csrf_token %}
+</form>
+
+
+  <div class="main">
+    {% include 'core/header.html' %}
+
+    <form method="post" action="{% url 'advance_day' %}" id="advanceForm" style="display:none;">
+      {% csrf_token %}
+    </form>
+
+    <div class="content">
+      <div class="messages-panel">
+        <div class="messages-title">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
+          Bandeja de Entrada
+        </div>
+
+        {% if messages %}
+        {% for msg in messages %}
+        <div class="message-card">
+          <div class="message-header">
+            <div class="message-info">
+              <span class="message-title">{{ msg.title }}</span>
+              <span class="message-date">{{ msg.game_date|date:"d/m/Y" }}</span>
+            </div>
+            <form method="post" action="{% url 'delete_message' msg.id %}" class="delete-form">
+              {% csrf_token %}
+              <button type="submit" class="btn-delete" title="Eliminar mensaje">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2M10 11v6M14 11v6"/></svg>
+              </button>
+            </form>
+          </div>
+          <div class="message-body">{{ msg.body }}</div>
+        </div>
+        {% endfor %}
+        {% else %}
+        <div class="empty-messages">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
+          <span>No hay mensajes</span>
+        </div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+document.getElementById('btnAdvance')?.addEventListener('click', function() {
+  document.getElementById('advanceForm').submit();
+});
+document.getElementById('btnReset')?.addEventListener('click', function(e) {
+  e.preventDefault();
+  if (confirm('¿Seguro que quieres reiniciar la partida? Se perderán todos los datos.')) {
+    document.getElementById('resetForm').submit();
+  }
+});
+</script>
+
+</body>
+</html>

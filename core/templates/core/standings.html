@@ -1,0 +1,114 @@
+{% load static humanize %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Clasificación · Tactical Five</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Roboto+Condensed:wght@300;400;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="{% static 'css/standings.css' %}">
+</head>
+<body>
+
+<div class="bg-noise"></div>
+<div class="bg-stripes"></div>
+
+<div class="app">
+
+  {% include 'core/sidebar.html' with sidebar_page='standings' %}
+
+<form method="post" action="{% url 'advance_day' %}" id="advanceForm" style="display:none;">
+  {% csrf_token %}
+</form>
+<form method="post" action="{% url 'reset_game' %}" id="resetForm" style="display:none;">
+  {% csrf_token %}
+</form>
+
+
+  <div class="main">
+    {% include 'core/header.html' %}
+
+    <div class="content">
+      <div class="panel panel-standings">
+        <div class="panel-title-row">
+          <div class="panel-title">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 21h8m-4-4v4m-5-8h10a2 2 0 002-2V7a2 2 0 00-2-2H6a2 2 0 00-2 2v4a2 2 0 002 2z"/><path d="M12 3v4"/></svg>
+            Clasificación NBA
+          </div>
+          <div class="conf-filters">
+            <a href="?conf=all" class="conf-btn{% if selected_conf == 'all' %} active{% endif %}">General</a>
+            <a href="?conf=East" class="conf-btn{% if selected_conf == 'East' %} active{% endif %}">Conferencia Este</a>
+            <a href="?conf=West" class="conf-btn{% if selected_conf == 'West' %} active{% endif %}">Conferencia Oeste</a>
+          </div>
+        </div>
+
+        <table class="standings-table">
+          <thead>
+            <tr>
+              <th class="col-rank">#</th>
+              <th class="col-team">Equipo</th>
+              <th class="col-gp">PJ</th>
+              <th class="col-w">G</th>
+              <th class="col-l">P</th>
+              <th class="col-pct">%</th>
+              <th class="col-diff">DIF</th>
+              <th class="col-streak">Racha</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for s in standings %}
+            <tr class="{% if s.team_id == team.pk %}my-team{% endif %}">
+              <td class="col-rank">
+                {% if s.zone == 'playoff' %}
+                <span class="rank-badge rank-playoff">{{ s.rank }}</span>
+                {% elif s.zone == 'playin' %}
+                <span class="rank-badge rank-playin">{{ s.rank }}</span>
+                {% else %}
+                <span class="rank-badge">{{ s.rank }}</span>
+                {% endif %}
+              </td>
+              <td class="col-team">
+                {% if s.logo %}
+                <img src="{% static s.logo %}" alt="{{ s.name }}" class="mini-logo">
+                {% endif %}
+                <span class="team-name">{{ s.name }}</span>
+              </td>
+              <td class="col-gp">{{ s.games_played }}</td>
+              <td class="col-w">{{ s.wins }}</td>
+              <td class="col-l">{{ s.losses }}</td>
+              <td class="col-pct">{{ s.pct|floatformat:3 }}</td>
+              <td class="col-diff">
+                {% if s.rank == 1 %}-{% elif s.gb == 0 %}-{% else %}{{ s.gb|floatformat:1 }} GB{% endif %}
+              </td>
+              <td class="col-streak">
+                {% if s.streak %}
+                <span class="streak {% if s.streak.type == 'win' %}streak-win{% elif s.streak.type == 'loss' %}streak-loss{% endif %}">
+                  {{ s.streak.text }}
+                </span>
+                {% else %}-{% endif %}
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+document.getElementById('btnAdvance')?.addEventListener('click', function() {
+  document.getElementById('advanceForm').submit();
+});
+document.getElementById('btnReset')?.addEventListener('click', function(e) {
+  e.preventDefault();
+  if (confirm('¿Seguro que quieres reiniciar la partida? Se perderán todos los datos.')) {
+    document.getElementById('resetForm').submit();
+  }
+});
+</script>
+
+</body>
+</html>

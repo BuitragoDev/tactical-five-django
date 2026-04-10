@@ -1,0 +1,94 @@
+/* ═══════════════════════════════════════════
+   NEXT SEASON STYLES
+   ═══════════════════════════════════════════ */
+
+.next-season-container {
+  max-width: 1000px;
+  margin: 0 auto;
+}
+.next-season-header {
+  text-align: center;
+  margin-bottom: 40px;
+}
+.next-season-header h1 {
+  font-family: 'Oswald', sans-serif;
+  font-size: 36px;
+  font-weight: 700;
+  letter-spacing: 4px;
+  text-transform: uppercase;
+  color: var(--text-lt);
+}
+
+.team-selection {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-bottom: 24px;
+}
+.team-select-card {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 16px 20px;
+  background: var(--bg2);
+  border: 2px solid var(--border);
+  cursor: pointer;
+  transition: all .15s;
+  position: relative;
+}
+.team-select-card:hover {
+  border-color: var(--border2);
+  background: var(--bg3);
+}
+.team-select-card.selected {
+  border-color: var(--gold);
+  background: var(--panel);
+}
+.team-select-logo {
+  width: 52px;
+  height: 52px;
+  object-fit: contain;
+  flex-shrink: 0;
+}
+.team-select-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  flex: 1;
+}
+.team-select-name {
+  font-family: 'Oswald', sans-serif;
+  font-size: 20px;
+  font-weight: 600;
+  color: var(--text-lt);
+  letter-spacing: 1px;
+}
+.team-select-detail {
+  font-size: 13px;
+  color: var(--text-dim);
+}
+.team-select-badge {
+  font-family: 'Oswald', sans-serif;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 2px;
+  color: var(--gold);
+  background: rgba(212,160,23,.1);
+  padding: 4px 12px;
+  border: 1px solid var(--gold);
+  flex-shrink: 0;
+}
+
+.ns-note {
+  text-align: center;
+  color: var(--text-dim);
+  font-size: 14px;
+  font-style: italic;
+}
+
+.btn-start-season {
+  background: var(--green) !important;
+}
+.btn-start-season:hover {
+  background: #2ecc71 !important;
+}

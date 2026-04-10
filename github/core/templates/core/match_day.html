@@ -1,0 +1,304 @@
+{% load static humanize %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Día de Partido · Tactical Five</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Roboto+Condensed:wght@300;400;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="{% static 'css/match_day.css' %}">
+</head>
+<body>
+
+<div class="bg-noise"></div>
+<div class="bg-stripes"></div>
+
+<div class="app">
+
+  <div class="main">
+    <header class="top-header">
+      <div class="header-left">
+        {% if team.logo %}
+        <img src="{% static team.logo %}" alt="{{ team.name }}" class="header-logo">
+        {% endif %}
+        <div class="header-info">
+          <div class="header-team-name">{{ team.name }} <span class="header-subtitle">(RESUMEN DE PARTIDO)</span></div>
+          <div class="header-manager">Manager: <strong>{{ manager_name }}</strong></div>
+        </div>
+      </div>
+      <div class="header-right">
+        <div class="header-season">
+          <span class="season-label">Temporada {{ season_label }}</span>
+        </div>
+        <div class="header-date">{{ current_date }}</div>
+        <div class="header-game-day">Jornada {{ game_day }}</div>
+        <a href="{% url 'game_results' %}" class="btn-header-back" id="btnContinue">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+          CONTINUAR
+        </a>
+      </div>
+    </header>
+
+    <div class="content">
+
+      <div class="match-banner">
+ 
+        <div class="match-teams">
+          <div class="match-team {% if result.home_team == team %}my-team{% endif %}">
+            {% if result.home_team.logo %}
+            <img src="{% static result.home_team.logo %}" alt="{{ result.home_team.name }}" class="match-team-logo">
+            {% endif %}
+            <span class="match-team-name">{{ result.home_team.name }}</span>
+            {% if result.home_team == team %}
+            <span class="my-team-badge">MI EQUIPO</span>
+            {% endif %}
+          </div>
+
+          <div class="match-score">
+            <span class="score-home">{{ result.home_score }}</span>
+            <span class="score-sep">-</span>
+            <span class="score-away">{{ result.away_score }}</span>
+          </div>
+
+          <div class="match-team {% if result.away_team == team %}my-team{% endif %}">
+            {% if result.away_team.logo %}
+            <img src="{% static result.away_team.logo %}" alt="{{ result.away_team.name }}" class="match-team-logo">
+            {% endif %}
+            <span class="match-team-name">{{ result.away_team.name }}</span>
+            {% if result.away_team == team %}
+            <span class="my-team-badge">MI EQUIPO</span>
+            {% endif %}
+          </div>
+        </div>
+
+        <div class="match-venue">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 21h18M3 7v14M21 7v14M6 11h4M6 15h4M14 11h4M14 15h4M9 21V11h6v10M12 3L3 7h18L12 3z"/></svg>
+          <span>{{ result.home_team.arena }}{% if attendance %} ({{ attendance|intcomma }} espectadores){% endif %}</span>
+        </div>
+      </div>
+
+      <div class="box-scores">
+        <div class="box-score-panel">
+          <div class="box-score-header">
+            <img src="{% static result.home_team.logo %}" alt="" class="box-logo">
+            <span class="box-team-name">{{ result.home_team.name }}</span>
+          </div>
+          <table class="box-table">
+            <thead>
+              <tr>
+                <th class="col-player">Jugador</th>
+                <th class="col-min">MIN</th>
+                <th class="col-pts">PTS</th>
+                <th class="col-fg">TC</th>
+                <th class="col-3p">3P</th>
+                <th class="col-ft">TL</th>
+                <th class="col-reb">REB</th>
+                <th class="col-ast">AST</th>
+                <th class="col-stl">ROB</th>
+                <th class="col-blk">TAP</th>
+                <th class="col-to">PER</th>
+                <th class="col-pf">FP</th>
+                <th class="col-val">VAL</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for ps in result.home_stats %}
+              {% if ps.minutes > 0 %}
+              <tr class="{% if ps.player.team_id == team.pk %}my-player{% endif %}">
+                <td class="col-player">
+                  {% if mvp and ps.player.pk == mvp.player.pk %}
+                  <span class="mvp-star">★</span>
+                  {% endif %}
+                  <span class="player-pos">{{ ps.position }}</span>
+                  <span class="player-name">{{ ps.name }}</span>
+                </td>
+                <td class="col-min">{{ ps.minutes }}</td>
+                <td class="col-pts">{{ ps.points }}</td>
+                <td class="col-fg">{{ ps.fgm }}/{{ ps.fga }}</td>
+                <td class="col-3p">{{ ps.fg3m }}/{{ ps.fg3a }}</td>
+                <td class="col-ft">{{ ps.ftm }}/{{ ps.fta }}</td>
+                <td class="col-reb">{{ ps.oreb|add:ps.dreb }}</td>
+                <td class="col-ast">{{ ps.assists }}</td>
+                <td class="col-stl">{{ ps.steals }}</td>
+                <td class="col-blk">{{ ps.blocks }}</td>
+                <td class="col-to">{{ ps.turnovers }}</td>
+                <td class="col-pf">{{ ps.pf }}</td>
+                <td class="col-val">{{ ps.rating }}</td>
+              </tr>
+              {% endif %}
+              {% endfor %}
+            </tbody>
+            <tfoot>
+              <tr>
+                <td class="col-player">Totales</td>
+                <td class="col-min">{{ result.home_team_stats.total_minutes|default:240 }}</td>
+                <td class="col-pts">{{ result.home_score }}</td>
+                <td class="col-fg">{{ result.home_team_stats.fgm }}/{{ result.home_team_stats.fga }}</td>
+                <td class="col-3p">{{ result.home_team_stats.fg3m }}/{{ result.home_team_stats.fg3a }}</td>
+                <td class="col-ft">{{ result.home_team_stats.ftm }}/{{ result.home_team_stats.fta }}</td>
+                <td class="col-reb">{{ result.home_team_stats.reb }}</td>
+                <td class="col-ast">{{ result.home_team_stats.assists }}</td>
+                <td class="col-stl">{{ result.home_team_stats.steals }}</td>
+                <td class="col-blk">{{ result.home_team_stats.blocks }}</td>
+                <td class="col-to">{{ result.home_team_stats.turnovers }}</td>
+                <td class="col-pf">{{ result.home_team_stats.pf }}</td>
+                <td class="col-val"></td>
+              </tr>
+            </tfoot>
+          </table>
+        </div>
+
+        <div class="box-score-panel">
+          <div class="box-score-header">
+            <img src="{% static result.away_team.logo %}" alt="" class="box-logo">
+            <span class="box-team-name">{{ result.away_team.name }}</span>
+          </div>
+          <table class="box-table">
+            <thead>
+              <tr>
+                <th class="col-player">Jugador</th>
+                <th class="col-min">MIN</th>
+                <th class="col-pts">PTS</th>
+                <th class="col-fg">TC</th>
+                <th class="col-3p">3P</th>
+                <th class="col-ft">TL</th>
+                <th class="col-reb">REB</th>
+                <th class="col-ast">AST</th>
+                <th class="col-stl">ROB</th>
+                <th class="col-blk">TAP</th>
+                <th class="col-to">PER</th>
+                <th class="col-pf">FP</th>
+                <th class="col-val">VAL</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for ps in result.away_stats %}
+              {% if ps.minutes > 0 %}
+              <tr class="{% if ps.player.team_id == team.pk %}my-player{% endif %}">
+                <td class="col-player">
+                  {% if mvp and ps.player.pk == mvp.player.pk %}
+                  <span class="mvp-star">★</span>
+                  {% endif %}
+                  <span class="player-pos">{{ ps.position }}</span>
+                  <span class="player-name">{{ ps.name }}</span>
+                </td>
+                <td class="col-min">{{ ps.minutes }}</td>
+                <td class="col-pts">{{ ps.points }}</td>
+                <td class="col-fg">{{ ps.fgm }}/{{ ps.fga }}</td>
+                <td class="col-3p">{{ ps.fg3m }}/{{ ps.fg3a }}</td>
+                <td class="col-ft">{{ ps.ftm }}/{{ ps.fta }}</td>
+                <td class="col-reb">{{ ps.oreb|add:ps.dreb }}</td>
+                <td class="col-ast">{{ ps.assists }}</td>
+                <td class="col-stl">{{ ps.steals }}</td>
+                <td class="col-blk">{{ ps.blocks }}</td>
+                <td class="col-to">{{ ps.turnovers }}</td>
+                <td class="col-pf">{{ ps.pf }}</td>
+                <td class="col-val">{{ ps.rating }}</td>
+              </tr>
+              {% endif %}
+              {% endfor %}
+            </tbody>
+            <tfoot>
+              <tr>
+                <td class="col-player">Totales</td>
+                <td class="col-min">240</td>
+                <td class="col-pts">{{ result.away_score }}</td>
+                <td class="col-fg">{{ result.away_team_stats.fgm }}/{{ result.away_team_stats.fga }}</td>
+                <td class="col-3p">{{ result.away_team_stats.fg3m }}/{{ result.away_team_stats.fg3a }}</td>
+                <td class="col-ft">{{ result.away_team_stats.ftm }}/{{ result.away_team_stats.fta }}</td>
+                <td class="col-reb">{{ result.away_team_stats.reb }}</td>
+                <td class="col-ast">{{ result.away_team_stats.assists }}</td>
+                <td class="col-stl">{{ result.away_team_stats.steals }}</td>
+                <td class="col-blk">{{ result.away_team_stats.blocks }}</td>
+                <td class="col-to">{{ result.away_team_stats.turnovers }}</td>
+                <td class="col-pf">{{ result.away_team_stats.pf }}</td>
+                <td class="col-val"></td>
+              </tr>
+            </tfoot>
+          </table>
+        </div>
+      </div>
+
+      <div class="team-stats-comparison" id="teamStatsAccordion">
+        <div class="tsc-header" onclick="toggleTeamStats()">
+          <span class="tsc-title">Estadísticas del Equipo</span>
+          <svg class="tsc-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
+        </div>
+        <div class="tsc-body" id="teamStatsBody">
+          <div class="tsc-row">
+            <span class="tsc-val tsc-home">{{ result.home_team_stats.fgm }}/{{ result.home_team_stats.fga }}</span>
+            <span class="tsc-label">Tiros de Campo</span>
+            <span class="tsc-val tsc-away">{{ result.away_team_stats.fgm }}/{{ result.away_team_stats.fga }}</span>
+          </div>
+          <div class="tsc-row">
+            <span class="tsc-val tsc-home">{{ result.home_team_stats.fg3m }}/{{ result.home_team_stats.fg3a }}</span>
+            <span class="tsc-label">Triples</span>
+            <span class="tsc-val tsc-away">{{ result.away_team_stats.fg3m }}/{{ result.away_team_stats.fg3a }}</span>
+          </div>
+          <div class="tsc-row">
+            <span class="tsc-val tsc-home">{{ result.home_team_stats.ftm }}/{{ result.home_team_stats.fta }}</span>
+            <span class="tsc-label">Tiros Libres</span>
+            <span class="tsc-val tsc-away">{{ result.away_team_stats.ftm }}/{{ result.away_team_stats.fta }}</span>
+          </div>
+          <div class="tsc-row">
+            <span class="tsc-val tsc-home">{{ result.home_team_stats.oreb }}</span>
+            <span class="tsc-label">Reb. Ofensivos</span>
+            <span class="tsc-val tsc-away">{{ result.away_team_stats.oreb }}</span>
+          </div>
+          <div class="tsc-row">
+            <span class="tsc-val tsc-home">{{ result.home_team_stats.dreb }}</span>
+            <span class="tsc-label">Reb. Defensivos</span>
+            <span class="tsc-val tsc-away">{{ result.away_team_stats.dreb }}</span>
+          </div>
+          <div class="tsc-row">
+            <span class="tsc-val tsc-home">{{ result.home_team_stats.reb }}</span>
+            <span class="tsc-label">Rebotes Totales</span>
+            <span class="tsc-val tsc-away">{{ result.away_team_stats.reb }}</span>
+          </div>
+          <div class="tsc-row">
+            <span class="tsc-val tsc-home">{{ result.home_team_stats.assists }}</span>
+            <span class="tsc-label">Asistencias</span>
+            <span class="tsc-val tsc-away">{{ result.away_team_stats.assists }}</span>
+          </div>
+          <div class="tsc-row">
+            <span class="tsc-val tsc-home">{{ result.home_team_stats.steals }}</span>
+            <span class="tsc-label">Robos</span>
+            <span class="tsc-val tsc-away">{{ result.away_team_stats.steals }}</span>
+          </div>
+          <div class="tsc-row">
+            <span class="tsc-val tsc-home">{{ result.home_team_stats.turnovers }}</span>
+            <span class="tsc-label">Pérdidas</span>
+            <span class="tsc-val tsc-away">{{ result.away_team_stats.turnovers }}</span>
+          </div>
+          <div class="tsc-row">
+            <span class="tsc-val tsc-home">{{ result.home_team_stats.pf }}</span>
+            <span class="tsc-label">Faltas</span>
+            <span class="tsc-val tsc-away">{{ result.away_team_stats.pf }}</span>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<script>
+function toggleTeamStats() {
+  document.getElementById('teamStatsAccordion').classList.toggle('open');
+}
+
+document.addEventListener('keydown', function(e) {
+  if (e.key === 'c' || e.key === 'C') {
+    var inputFocused = document.activeElement && (document.activeElement.tagName === 'INPUT' || document.activeElement.tagName === 'SELECT' || document.activeElement.tagName === 'TEXTAREA');
+    if (!inputFocused) {
+      e.preventDefault();
+      document.getElementById('btnContinue').click();
+    }
+  }
+});
+</script>
+
+</body>
+</html>

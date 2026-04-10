@@ -1,0 +1,633 @@
+@import url('https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Roboto+Condensed:wght@300;400;700&display=swap');
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg:       #0f1117;
+  --bg2:      #161a24;
+  --bg3:      #1c2130;
+  --panel:    #1e2535;
+  --border:   #2a3347;
+  --border2:  #3a4a63;
+  --gold:     #d4a017;
+  --gold-lt:  #f0c040;
+  --blue:     #2a5fc9;
+  --blue-lt:  #4a80f0;
+  --text:     #d0d8e8;
+  --text-dim: #7a8aaa;
+  --text-lt:  #ffffff;
+  --green:    #27ae60;
+  --red:      #c0392b;
+}
+
+html, body {
+  height: 100%;
+  font-family: 'Roboto Condensed', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  overflow: hidden;
+}
+
+.bg-noise {
+  position: fixed; inset: 0; z-index: 0;
+  background: linear-gradient(180deg, #0a0d14 0%, #0f1520 60%, #080b11 100%);
+}
+.bg-stripes {
+  position: fixed; inset: 0; z-index: 0;
+  background-image: repeating-linear-gradient(
+    90deg, transparent 0px, transparent 119px,
+    rgba(255,255,255,.012) 120px
+  );
+}
+
+.app {
+  position: relative; z-index: 1;
+  display: grid;
+  grid-template-columns: 240px 1fr;
+  grid-template-rows: 1fr auto;
+  height: 100vh;
+}
+
+/* ═══════════ SIDEBAR ═══════════ */
+.sidebar {
+  background: var(--bg2);
+  border-right: 1px solid var(--border);
+  display: flex; flex-direction: column;
+  overflow: hidden;
+  grid-row: 1;
+}
+
+.sidebar-extra {
+  grid-column: 1;
+  grid-row: 2;
+  padding: 12px 20px 16px;
+  border-top: 1px solid var(--border);
+  background: var(--bg2);
+}
+
+.sidebar-brand {
+  display: flex; align-items: center; gap: 12px;
+  padding: 20px 20px 18px;
+  border-bottom: 1px solid var(--border);
+}
+.brand-icon {
+  background: var(--gold);
+  color: #000;
+  font-family: 'Oswald', sans-serif;
+  font-size: 14px; font-weight: 700;
+  padding: 4px 10px;
+  clip-path: polygon(0 0, 100% 0, 85% 100%, 0% 100%);
+  letter-spacing: 1px;
+}
+.brand-text {
+  font-family: 'Oswald', sans-serif;
+  font-size: 16px; font-weight: 600;
+  letter-spacing: 2px;
+  color: var(--text-lt);
+}
+.brand-text span { color: var(--gold); }
+
+.sidebar-nav {
+  flex: 1;
+  padding: 12px 0;
+  overflow-y: auto;
+}
+.sidebar-nav::-webkit-scrollbar { width: 3px; }
+.sidebar-nav::-webkit-scrollbar-track { background: transparent; }
+.sidebar-nav::-webkit-scrollbar-thumb { background: var(--border); }
+
+.nav-item {
+  display: flex; align-items: center; gap: 14px;
+  padding: 12px 20px;
+  color: var(--text-dim);
+  text-decoration: none;
+  font-family: 'Oswald', sans-serif;
+  font-size: 15px; font-weight: 500;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  transition: all .15s;
+  border-left: 3px solid transparent;
+}
+.nav-item svg {
+  width: 20px; height: 20px; flex-shrink: 0;
+}
+.nav-item:hover {
+  color: var(--text-lt);
+  background: rgba(255,255,255,.03);
+  border-left-color: var(--border2);
+}
+.nav-item.active {
+  color: var(--gold);
+  background: rgba(212,160,23,.06);
+  border-left-color: var(--gold);
+}
+
+.sidebar-footer {
+  padding: 12px 20px 16px;
+  border-top: 1px solid var(--border);
+  display: flex; flex-direction: column; gap: 10px;
+  text-align: center;
+}
+.nav-reset-link {
+  display: flex; align-items: center; gap: 12px;
+  padding: 10px 16px;
+  color: var(--red);
+  text-decoration: none;
+  font-family: 'Oswald', sans-serif;
+  font-size: 14px; font-weight: 500;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  border: 1px solid rgba(192,57,43,.3);
+  border-radius: 4px;
+  transition: all .15s;
+  cursor: pointer;
+}
+.nav-reset-link svg {
+  width: 18px; height: 18px; flex-shrink: 0;
+}
+.nav-reset-link:hover {
+  background: rgba(192,57,43,.12);
+  border-color: var(--red);
+}
+.version-tag {
+  font-family: 'Oswald', sans-serif;
+  font-size: 12px; font-weight: 400;
+  letter-spacing: 2px;
+  color: var(--text-dim);
+}
+
+/* ═══════════ MAIN ═══════════ */
+.main {
+  display: flex; flex-direction: column;
+  overflow: hidden;
+}
+
+/* ═══════════ TOP HEADER ═══════════ */
+.top-header {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 14px 28px;
+  background: var(--bg2);
+  border-bottom: 2px solid var(--gold);
+  flex-shrink: 0;
+}
+.header-left {
+  display: flex; align-items: center; gap: 16px;
+}
+.header-logo {
+  width: 52px; height: 52px;
+  object-fit: contain;
+}
+.header-info {
+  display: flex; flex-direction: column; gap: 2px;
+}
+.header-team-name {
+  font-family: 'Oswald', sans-serif;
+  font-size: 22px; font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: var(--text-lt);
+}
+.header-manager {
+  font-size: 14px;
+  color: var(--text-dim);
+}
+.header-manager strong {
+  color: var(--gold);
+  font-weight: 600;
+}
+
+.header-budget {
+  display: flex; flex-direction: column; align-items: flex-start; gap: 2px;
+  margin-left: 32px;
+  padding-left: 32px;
+  border-left: 1px solid var(--border);
+}
+.header-salary {
+  display: flex; flex-direction: column; align-items: flex-start; gap: 2px;
+  margin-left: 32px;
+  padding-left: 32px;
+  border-left: 1px solid var(--border);
+}
+.header-cap {
+  display: flex; flex-direction: column; align-items: flex-start; gap: 2px;
+  margin-left: 32px;
+  padding-left: 32px;
+  border-left: 1px solid var(--border);
+}
+.budget-label {
+  font-size: 12px;
+  color: var(--text-dim);
+  letter-spacing: 1px;
+  text-transform: uppercase;
+}
+.budget-value {
+  font-family: 'Oswald', sans-serif;
+  font-size: 18px; font-weight: 600;
+  color: var(--green);
+}
+.salary-label {
+  font-size: 12px;
+  color: var(--text-dim);
+  letter-spacing: 1px;
+  text-transform: uppercase;
+}
+.salary-value {
+  font-family: 'Oswald', sans-serif;
+  font-size: 18px; font-weight: 600;
+  color: var(--text-lt);
+}
+.cap-label {
+  font-size: 12px;
+  color: var(--text-dim);
+  letter-spacing: 1px;
+  text-transform: uppercase;
+}
+.cap-value {
+  font-family: 'Oswald', sans-serif;
+  font-size: 18px; font-weight: 600;
+}
+.cap-value.cap-positive {
+  color: var(--green);
+}
+.cap-value.cap-negative {
+  color: var(--red);
+}
+
+.header-team-name {
+  font-family: 'Oswald', sans-serif;
+  font-size: 22px; font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: var(--text-lt);
+}
+.header-manager {
+  font-size: 14px;
+  color: var(--text-dim);
+}
+.header-manager strong {
+  color: var(--gold);
+  font-weight: 600;
+}
+
+.header-right {
+  display: flex; align-items: center; gap: 20px;
+}
+.header-season {
+  display: flex; flex-direction: column; align-items: flex-end; gap: 2px;
+}
+.season-label {
+  font-family: 'Oswald', sans-serif;
+  font-size: 16px; font-weight: 600;
+  color: var(--gold);
+  letter-spacing: 1px;
+}
+.season-day {
+  font-size: 12px;
+  color: var(--text);
+}
+.header-date {
+  font-family: 'Oswald', sans-serif;
+  font-size: 16px; font-weight: 500;
+  color: var(--text-dim);
+  letter-spacing: 1px;
+  text-transform: capitalize;
+  padding: 0 12px;
+  border-left: 1px solid var(--border);
+  border-right: 1px solid var(--border);
+}
+
+.btn-advance {
+  display: flex; align-items: center; gap: 10px;
+  background: var(--blue);
+  border: none;
+  color: #fff;
+  font-family: 'Oswald', sans-serif;
+  font-size: 16px; font-weight: 600;
+  letter-spacing: 2px;
+  padding: 10px 24px;
+  cursor: pointer;
+  transition: background .15s;
+  text-decoration: none;
+}
+.btn-advance:hover { background: var(--blue-lt); }
+.btn-advance svg { width: 16px; height: 16px; }
+
+/* ═══════════ CONTENT ═══════════ */
+.content {
+  flex: 1;
+  overflow-y: auto;
+  padding: 16px 20px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  grid-template-rows: auto auto auto;
+  gap: 14px;
+  align-content: start;
+}
+.content::-webkit-scrollbar { width: 5px; }
+.content::-webkit-scrollbar-track { background: transparent; }
+.content::-webkit-scrollbar-thumb { background: var(--border2); }
+
+/* ═══════════ PANELS ═══════════ */
+.panel {
+  background: var(--bg3);
+  border: 1px solid var(--border);
+  padding: 12px 16px;
+  animation: fadeUp .4s both;
+}
+.panel-title {
+  display: flex; align-items: center; gap: 10px;
+  font-family: 'Oswald', sans-serif;
+  font-size: 17px; font-weight: 600;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--gold);
+  margin-bottom: 16px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid var(--border);
+}
+.panel-title svg { width: 20px; height: 20px; }
+
+.panel-date {
+  margin-left: auto;
+  font-family: 'Oswald', sans-serif;
+  font-size: 13px; font-weight: 400;
+  color: var(--text-dim);
+  letter-spacing: 1px;
+}
+
+.no-games {
+  text-align: center;
+  padding: 20px;
+  color: var(--text-dim);
+  font-family: 'Oswald', sans-serif;
+  font-size: 14px;
+  letter-spacing: 1px;
+}
+
+.panel-title-row {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 14px;
+}
+.panel-title-row .panel-title {
+  margin-bottom: 0;
+}
+.conf-filters {
+  display: flex; gap: 8px;
+}
+.conf-btn {
+  background: none;
+  border: 1px solid var(--border2);
+  color: var(--text-dim);
+  font-family: 'Oswald', sans-serif;
+  font-size: 13px; font-weight: 500;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  padding: 5px 18px;
+  cursor: pointer;
+  transition: all .15s;
+}
+.conf-btn:hover {
+  border-color: var(--gold);
+  color: var(--text-lt);
+}
+.conf-btn.active {
+  border-color: var(--gold);
+  color: var(--gold);
+  background: rgba(212,160,23,.08);
+}
+
+.panel-last-game  { grid-column: 1; grid-row: 1; }
+.panel-next-game  { grid-column: 2; grid-row: 1; }
+.panel-standings  { grid-column: 1; grid-row: 2 / 4; }
+.panel-stats      { grid-column: 2; grid-row: 2; }
+.panel-board      { grid-column: 2; grid-row: 3; }
+
+/* ═══════════ STANDINGS TABLE ═══════════ */
+.standings-table {
+  width: 100%;
+  border-collapse: collapse;
+  table-layout: fixed;
+}
+.standings-table th {
+  font-family: 'Oswald', sans-serif;
+  font-size: 12px; font-weight: 600;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--text-dim);
+  text-align: left;
+  padding: 2px 4px;
+  border-bottom: 1px solid var(--border);
+}
+.standings-table th:not(:first-child) { text-align: center; }
+.standings-table th:nth-child(3),
+.standings-table th:nth-child(4),
+.standings-table th:nth-child(5),
+.standings-table th:nth-child(6),
+.standings-table th:nth-child(7) {
+  text-align: right;
+  padding-right: 14px;
+}
+.standings-table th:nth-child(1) { width: 40px; }
+.standings-table th:nth-child(2) {
+  width: auto;
+  text-align: left;
+  padding-right: 0;
+}
+.standings-table th:nth-child(3) { width: 70px; }
+.standings-table th:nth-child(4) { width: 70px; }
+.standings-table th:nth-child(5) { width: 70px; }
+.standings-table th:nth-child(6) { width: 70px; }
+.standings-table th:nth-child(7) { width: 70px; }
+.standings-table td {
+  padding: 2px 4px;
+  border-bottom: 1px solid rgba(42,51,71,.4);
+  font-size: 14px;
+}
+.standings-table td:not(:first-child) { text-align: center; }
+.standings-table td:nth-child(3),
+.standings-table td:nth-child(4),
+.standings-table td:nth-child(5),
+.standings-table td:nth-child(6),
+.standings-table td:nth-child(7) {
+  text-align: right;
+  padding-right: 14px;
+}
+.standings-table tr.my-team {
+  background: rgba(212,160,23,.06);
+}
+.standings-table tr.my-team .team-name {
+  color: var(--gold);
+  font-weight: 700;
+}
+.rank {
+  font-family: 'Oswald', sans-serif;
+  font-weight: 600;
+  color: var(--text-dim);
+}
+.team-name {
+  display: flex; align-items: center; gap: 10px;
+  color: var(--text);
+  font-weight: 500;
+}
+.mini-logo {
+  width: 28px; height: 28px;
+  object-fit: contain;
+  flex-shrink: 0;
+}
+.wins { color: var(--green); font-weight: 600; }
+.losses { color: var(--red); font-weight: 600; }
+.pct {
+  font-family: 'Oswald', sans-serif;
+  font-weight: 500;
+  color: var(--text);
+}
+.games-played {
+  font-family: 'Oswald', sans-serif;
+  font-weight: 500;
+  color: var(--text-dim);
+}
+.streak-cell {
+  font-family: 'Oswald', sans-serif;
+  font-weight: 600;
+  font-size: 13px;
+  letter-spacing: 1px;
+}
+.streak-win {
+  color: var(--green);
+  font-weight: 600;
+}
+.streak-loss {
+  color: var(--red);
+  font-weight: 600;
+}
+
+/* ═══════════ STATS GRID ═══════════ */
+.stats-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+}
+.stat-card {
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  padding: 12px;
+  text-align: center;
+  display: flex; flex-direction: column; gap: 6px;
+}
+.stat-card-label {
+  font-family: 'Oswald', sans-serif;
+  font-size: 14px; font-weight: 600;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  color: var(--text-dim);
+}
+.stat-card-value {
+  font-family: 'Oswald', sans-serif;
+  font-size: 52px; font-weight: 700;
+  color: var(--gold);
+  line-height: 1;
+}
+.stat-card-player {
+  font-size: 18px;
+  color: var(--text);
+  font-weight: 600;
+}
+.stat-card-games {
+  font-size: 14px;
+  color: var(--text-dim);
+}
+
+/* ═══════════ BOARD RELATIONS ═══════════ */
+.board-grid {
+  display: flex; flex-direction: column; gap: 18px;
+}
+.board-item {
+  display: flex; align-items: center; gap: 14px;
+}
+.board-label {
+  font-family: 'Oswald', sans-serif;
+  font-size: 13px; font-weight: 500;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: var(--text-dim);
+  width: 140px; flex-shrink: 0;
+}
+.board-bar {
+  flex: 1;
+  height: 10px;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  overflow: hidden;
+}
+.board-fill {
+  height: 100%;
+  transition: width .6s ease;
+}
+.board-value {
+  font-family: 'Oswald', sans-serif;
+  font-size: 16px; font-weight: 600;
+  color: var(--text-lt);
+  width: 45px; text-align: right;
+  flex-shrink: 0;
+}
+
+/* ═══════════ GAME RESULT / NEXT GAME ═══════════ */
+.game-result,
+.game-next {
+  display: flex; align-items: center; justify-content: space-between;
+}
+.game-team {
+  display: flex; flex-direction: column; align-items: center; gap: 8px;
+  flex: 1;
+}
+.game-team-logo {
+  width: 56px; height: 56px;
+  object-fit: contain;
+}
+.game-team-name {
+  font-family: 'Oswald', sans-serif;
+  font-size: 14px; font-weight: 600;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: var(--text);
+  text-align: center;
+}
+.game-score {
+  display: flex; align-items: center; gap: 8px;
+  padding: 0 20px;
+}
+.score-home, .score-away {
+  font-family: 'Oswald', sans-serif;
+  font-size: 42px; font-weight: 700;
+  color: var(--text-lt);
+}
+.score-sep {
+  font-family: 'Oswald', sans-serif;
+  font-size: 28px; font-weight: 400;
+  color: var(--text-dim);
+}
+.game-vs {
+  display: flex; flex-direction: column; align-items: center; gap: 4px;
+  padding: 0 20px;
+}
+.vs-text {
+  font-family: 'Oswald', sans-serif;
+  font-size: 28px; font-weight: 700;
+  color: var(--gold);
+  letter-spacing: 3px;
+}
+.vs-date {
+  font-size: 13px;
+  color: var(--text-dim);
+}
+
+/* ═══════════ ANIMATIONS ═══════════ */
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(16px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.panel:nth-child(1) { animation-delay: .05s; }
+.panel:nth-child(2) { animation-delay: .10s; }
+.panel:nth-child(3) { animation-delay: .15s; }
+.panel:nth-child(4) { animation-delay: .20s; }
+.panel:nth-child(5) { animation-delay: .25s; }

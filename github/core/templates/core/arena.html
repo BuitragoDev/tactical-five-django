@@ -1,0 +1,184 @@
+{% load static humanize %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Pabellón · Tactical Five</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Roboto+Condensed:wght@300;400;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="{% static 'css/arena.css' %}">
+</head>
+<body>
+
+<div class="bg-noise"></div>
+<div class="bg-stripes"></div>
+
+<div class="app">
+
+  {% include 'core/sidebar.html' with sidebar_page='arena' %}
+
+<form method="post" action="{% url 'advance_day' %}" id="advanceForm" style="display:none;">
+  {% csrf_token %}
+</form>
+<form method="post" action="{% url 'reset_game' %}" id="resetForm" style="display:none;">
+  {% csrf_token %}
+</form>
+
+
+  <div class="main">
+    {% include 'core/header.html' %}
+
+    <div class="content">
+
+      <!-- Arena Info Grid (3 columns) -->
+      <div class="arena-info-grid">
+        <div class="info-card">
+          <div class="info-card-header">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 21h18M3 7v14M21 7v14M6 11h4M6 15h4M14 11h4M14 15h4M9 21V11h6v10M12 3L3 7h18L12 3z"/></svg>
+            <span>{{ team.arena }}</span>
+          </div>
+          <div class="info-card-body">
+            <div class="info-row">
+              <span class="info-label">Ciudad</span>
+              <span class="info-value">{{ team.city }}</span>
+            </div>
+            <div class="info-row">
+              <span class="info-label">Capacidad base</span>
+              <span class="info-value">{{ team.capacity|floatformat:0 }}</span>
+            </div>
+            <div class="info-row">
+              <span class="info-label">Capacidad efectiva</span>
+              <span class="info-value highlight">{{ team.effective_capacity|floatformat:0 }}</span>
+            </div>
+            <div class="info-row">
+              <span class="info-label">Nivel</span>
+              <span class="info-value">
+                <span class="tier-badge" style="color:{{ team.arena_tier.1 }}">{{ team.arena_tier.0 }}</span>
+              </span>
+            </div>
+          </div>
+        </div>
+
+        <div class="info-card">
+          <div class="info-card-header">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+            <span>Nivel del Pabellón</span>
+          </div>
+          <div class="info-card-body">
+            <div class="level-display">
+              <div class="level-star {% if team.arena_level >= 1 %}active{% endif %}">
+                <svg viewBox="0 0 24 24" fill="{% if team.arena_level >= 1 %}currentColor{% else %}none{% endif %}" stroke="currentColor" stroke-width="2">
+                  <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
+                </svg>
+              </div>
+              <div class="level-star {% if team.arena_level >= 2 %}active{% endif %}">
+                <svg viewBox="0 0 24 24" fill="{% if team.arena_level >= 2 %}currentColor{% else %}none{% endif %}" stroke="currentColor" stroke-width="2">
+                  <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
+                </svg>
+              </div>
+              <div class="level-star {% if team.arena_level >= 3 %}active{% endif %}">
+                <svg viewBox="0 0 24 24" fill="{% if team.arena_level >= 3 %}currentColor{% else %}none{% endif %}" stroke="currentColor" stroke-width="2">
+                  <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
+                </svg>
+              </div>
+              <div class="level-star {% if team.arena_level >= 4 %}active{% endif %}">
+                <svg viewBox="0 0 24 24" fill="{% if team.arena_level >= 4 %}currentColor{% else %}none{% endif %}" stroke="currentColor" stroke-width="2">
+                  <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
+                </svg>
+              </div>
+              <div class="level-star {% if team.arena_level >= 5 %}active{% endif %}">
+                <svg viewBox="0 0 24 24" fill="{% if team.arena_level >= 5 %}currentColor{% else %}none{% endif %}" stroke="currentColor" stroke-width="2">
+                  <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
+                </svg>
+              </div>
+            </div>
+            {% if team.is_under_renovation %}
+            <div class="renovation-status">
+              <svg class="spin-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12a9 9 0 11-6.219-8.56"/><path d="M21 3v9h-9"/></svg>
+              <span>Remodelación en curso: {{ team.renovation_days_left }} días</span>
+            </div>
+            {% else %}
+            <div class="renovation-status complete">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 11-5.93-9.14"/><path d="M22 4L12 14.01l-3-3"/></svg>
+              <span>Sin obras en curso</span>
+            </div>
+            {% endif %}
+          </div>
+        </div>
+
+        <div class="info-card arena-image-card">
+          <div class="arena-image-wrapper">
+            {% if team.arena_image %}
+            <img src="{% static team.arena_image %}" alt="{{ team.arena }}" class="arena-image">
+            {% else %}
+            <img src="{% static 'arenas/default.png' %}" alt="Pabellón" class="arena-image">
+            {% endif %}
+          </div>
+        </div>
+      </div>
+
+      <!-- Renovation Options -->
+      <div class="renovations-panel">
+        <div class="renovations-title">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14.7 6.3a1 1 0 000 1.4l1.6 1.6a1 1 0 001.4 0l3.77-3.77a6 6 0 01-7.94 7.94l-6.91 6.91a2.12 2.12 0 01-3-3l6.91-6.91a6 6 0 017.94-7.94l-3.76 3.76z"/></svg>
+          Mejoras Disponibles
+        </div>
+
+        {% if team.is_under_renovation %}
+        <div class="renovation-active">
+          <svg class="spin-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12a9 9 0 11-6.219-8.56"/><path d="M21 3v9h-9"/></svg>
+          <span>Hay una remodelación en curso. Debes esperar a que termine para iniciar otra.</span>
+        </div>
+        {% endif %}
+
+        <div class="renovation-grid">
+          {% for r in renovations %}
+          <div class="renovation-card {% if not r.can_afford or team.is_under_renovation %}disabled{% endif %}">
+            <div class="renovation-icon">{{ r.icon }}</div>
+            <div class="renovation-info">
+              <span class="renovation-name">{{ r.name }}</span>
+              <span class="renovation-desc">{{ r.desc }}</span>
+              {% if r.capacity_bonus > 0 %}
+              <span class="renovation-bonus">+{{ r.capacity_bonus|floatformat:0 }} asientos</span>
+              {% endif %}
+            </div>
+            <div class="renovation-details">
+              <span class="renovation-cost">${{ r.cost|floatformat:0|intcomma }}</span>
+              <span class="renovation-duration">{{ r.duration_weeks }} semanas</span>
+            </div>
+            {% if r.can_afford and not team.is_under_renovation %}
+            <form method="post" action="{% url 'arena_renovate' %}">
+              {% csrf_token %}
+              <input type="hidden" name="type" value="{{ r.type }}">
+              <button type="submit" class="btn-renovate">Iniciar</button>
+            </form>
+            {% elif team.is_under_renovation %}
+            <span class="btn-renovate disabled">En obras</span>
+            {% else %}
+            <span class="btn-renovate disabled">Sin fondos</span>
+            {% endif %}
+          </div>
+          {% endfor %}
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<script>
+document.getElementById('btnAdvance')?.addEventListener('click', function() {
+  document.getElementById('advanceForm').submit();
+});
+document.getElementById('btnReset')?.addEventListener('click', function(e) {
+  e.preventDefault();
+  if (confirm('¿Seguro que quieres reiniciar la partida? Se perderán todos los datos.')) {
+    document.getElementById('resetForm').submit();
+  }
+});
+</script>
+
+</body>
+</html>

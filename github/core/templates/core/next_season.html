@@ -1,0 +1,144 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Nueva Temporada · Tactical Five</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Roboto+Condensed:wght@300;400;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="{% static 'css/end_season.css' %}">
+  <link rel="stylesheet" href="{% static 'css/next_season.css' %}">
+</head>
+<body>
+
+{% load conference_tags %}
+
+<div class="bg-noise"></div>
+<div class="bg-stripes"></div>
+
+<div class="app">
+
+  <div class="main">
+    <header class="top-header">
+      <div class="header-left">
+        {% if team.logo %}
+        <img src="{% static team.logo %}" alt="{{ team.name }}" class="header-logo">
+        {% endif %}
+        <div class="header-info">
+          <div class="header-team-name">{{ team.name }} <span class="header-subtitle">(NUEVA TEMPORADA)</span></div>
+          <div class="header-manager">Manager: <strong>{{ manager_name }}</strong></div>
+        </div>
+      </div>
+      <div class="header-right">
+        <div class="header-season">
+          <span class="season-label">Temporada {{ season_label }}</span>
+        </div>
+        <div class="header-date">{{ current_date }}</div>
+        <button class="btn-header-back btn-start-season" id="btnStartSeason">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polygon points="5 3 19 12 5 21 5 3"/>
+          </svg>
+          EMPEZAR TEMPORADA
+        </button>
+      </div>
+    </header>
+
+    <div class="content">
+      <div class="next-season-container">
+        <div class="next-season-header">
+          <h1>Elige tu Equipo</h1>
+          <span class="season-tag">{{ game_mode|title }}</span>
+        </div>
+
+        <div class="team-selection">
+          {% for t in available_teams %}
+          <div class="team-select-card {% if selected_team_id == t.pk|stringformat:'d' %}selected{% endif %}"
+               data-team-id="{{ t.pk }}">
+            {% if t.logo %}
+            <img src="{% static t.logo %}" alt="{{ t.abbreviation }}" class="team-select-logo">
+            {% endif %}
+            <div class="team-select-info">
+              <span class="team-select-name">{{ t.name }}</span>
+              <span class="team-select-detail">
+                {{ t.city }} · {{ t.conference|conference_name }}
+                {% if t.pk == team.pk %} · TU EQUIPO{% endif %}
+              </span>
+            </div>
+            {% if selected_team_id == t.pk|stringformat:'d' %}
+            <span class="team-select-badge">SELECCIONADO</span>
+            {% endif %}
+          </div>
+          {% endfor %}
+        </div>
+
+        {% if game_mode == 'promanager' %}
+        <p class="ns-note">Selecciona{% if not is_dismissed %} tu equipo actual o{% endif %} uno de los 3 equipos disponibles para la nueva temporada.</p>
+        {% else %}
+        <p class="ns-note">Continuarás con tu equipo actual en la nueva temporada.</p>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+document.querySelectorAll('.team-select-card').forEach(card => {
+  card.addEventListener('click', function() {
+    const teamId = this.dataset.teamId;
+
+    document.querySelectorAll('.team-select-card').forEach(c => {
+      c.classList.remove('selected');
+      const badge = c.querySelector('.team-select-badge');
+      if (badge) badge.remove();
+    });
+
+    this.classList.add('selected');
+    const badge = document.createElement('span');
+    badge.className = 'team-select-badge';
+    badge.textContent = 'SELECCIONADO';
+    this.appendChild(badge);
+
+    fetch(`/next-season/select/${teamId}/`, {
+      method: 'POST',
+      headers: {
+        'X-CSRFToken': '{{ csrf_token }}',
+        'Content-Type': 'application/json',
+      },
+    });
+  });
+});
+
+document.getElementById('btnStartSeason').addEventListener('click', function() {
+  const selected = document.querySelector('.team-select-card.selected');
+  if (!selected) {
+    alert('Selecciona un equipo primero');
+    return;
+  }
+
+  this.disabled = true;
+  this.textContent = 'INICIANDO...';
+
+  fetch('{% url "next_season_start" %}', {
+    method: 'POST',
+    headers: {
+      'X-CSRFToken': '{{ csrf_token }}',
+      'Content-Type': 'application/json',
+    },
+  })
+  .then(r => {
+    if (r.redirected) {
+      window.location.href = r.url;
+    } else {
+      window.location.href = '{% url "dashboard" %}';
+    }
+  })
+  .catch(() => {
+    window.location.href = '{% url "dashboard" %}';
+  });
+});
+</script>
+
+</body>
+</html>

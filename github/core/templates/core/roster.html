@@ -1,0 +1,382 @@
+{% load static humanize roster_tags %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Plantilla · Tactical Five</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Roboto+Condensed:wght@300;400;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="{% static 'css/roster.css' %}">
+</head>
+<body>
+
+<div class="bg-noise"></div>
+<div class="bg-stripes"></div>
+
+<div class="app">
+
+  {% include 'core/sidebar.html' with sidebar_page='roster' %}
+
+<form method="post" action="{% url 'advance_day' %}" id="advanceForm" style="display:none;">
+  {% csrf_token %}
+</form>
+<form method="post" action="{% url 'reset_game' %}" id="resetForm" style="display:none;">
+  {% csrf_token %}
+</form>
+
+
+  <div class="main">
+    {% include 'core/header.html' %}
+
+    <div class="content">
+
+      <div class="roster-layout">
+        <div class="roster-list">
+          <div class="roster-summary">
+            <div class="summary-item">
+              <span class="summary-value">{{ player_count }}</span>
+              <span class="summary-label">Jugadores</span>
+            </div>
+            <div class="summary-item">
+              <span class="summary-value">{{ team.overall }}</span>
+              <span class="summary-label">Overall</span>
+            </div>
+            <div class="summary-item">
+              <span class="summary-value">${{ team.budget|floatformat:0|intcomma }}</span>
+              <span class="summary-label">Presupuesto</span>
+            </div>
+          </div>
+
+          {% for pos in positions %}
+          {% with pos_players=roster_by_pos|get_item:pos %}
+          {% if pos_players %}
+          <div class="pos-section">
+            <div class="pos-header">
+              <span class="pos-badge">{{ pos }}</span>
+              <span class="pos-label">{{ pos_labels|get_item:pos }}</span>
+            </div>
+            {% for p in pos_players %}
+            <div class="player-row {% if p.injury_days > 0 %}injured{% endif %}" data-player-id="{{ p.pk }}"
+                 data-name="{{ p.full_name }}"
+                 data-pos="{{ p.position }}"
+                 data-age="{{ p.age }}"
+                 data-nat="{{ p.nationality }}"
+                 data-height="{{ p.height_cm }}"
+                 data-weight="{{ p.weight_kg }}"
+                 data-ovr="{{ p.overall }}"
+                 data-pot="{{ p.potential }}"
+                 data-speed="{{ p.speed }}"
+                 data-shooting="{{ p.shooting }}"
+                 data-threepoint="{{ p.three_point }}"
+                 data-passing="{{ p.passing }}"
+                 data-ballhandling="{{ p.ball_handling }}"
+                 data-defense="{{ p.defense }}"
+                 data-rebounding="{{ p.rebounding }}"
+                 data-athleticism="{{ p.athleticism }}"
+                 data-iq="{{ p.iq }}"
+                 data-steals="{{ p.steals }}"
+                 data-blocks="{{ p.blocks }}"
+                  data-salary="{{ p.salary }}"
+                  data-contract="{{ p.contract_years }}"
+                  data-injury-days="{{ p.injury_days }}"
+                  data-injury-type="{{ p.injury_type }}"
+                  data-season-games="{{ p.season_games }}"
+                  data-pts="{{ p.season_pts }}"
+                  data-reb="{{ p.season_reb }}"
+                  data-ast="{{ p.season_ast }}">
+              <span class="player-row-num">{{ forloop.counter|stringformat:"02d" }}</span>
+              <span class="player-row-name">{{ p.full_name }}</span>
+              <span class="player-row-ovr">{{ p.overall }}</span>
+              <span class="player-row-meta">{{ p.age }} años · {{ p.height_m|floatformat:2 }}m</span>
+              {% if p.contract_years <= 1 %}
+              <span class="player-row-contract" title="Último año de contrato">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><path d="M12 9v4M12 17h.01"/></svg>
+              </span>
+              {% endif %}
+              {% if p.injury_days > 0 %}
+              <span class="player-row-injury">🏥 {{ p.injury_days }}d</span>
+              {% endif %}
+            </div>
+            {% endfor %}
+          </div>
+          {% endif %}
+          {% endwith %}
+          {% endfor %}
+        </div>
+
+        {% if contract_result %}
+        <div class="contract-result {% if contract_result.accepted %}result-accepted{% else %}result-rejected{% endif %}" id="contractResult">
+          {% if contract_result.accepted %}
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 11-5.93-9.14"/><path d="M22 4L12 14.01l-3-3"/></svg>
+          <div class="result-text">
+            <span class="result-title">¡Oferta aceptada!</span>
+            <span class="result-detail">{{ contract_result.player }} ha firmado por {{ contract_result.salary }}/año durante {{ contract_result.years }}.</span>
+          </div>
+          {% else %}
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M15 9l-6 6M9 9l6 6"/></svg>
+          <div class="result-text">
+            <span class="result-title">Oferta rechazada</span>
+            <span class="result-detail">{{ contract_result.player }} ha rechazado la oferta de {{ contract_result.salary }}/año durante {{ contract_result.years }}. Puedes seguir intentándolo.</span>
+          </div>
+          {% endif %}
+        </div>
+        {% endif %}
+
+        <div class="player-detail" id="playerDetail">
+          <div class="detail-empty">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/></svg>
+            <span>Selecciona un jugador para ver sus detalles</span>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+{% if trade_success %}
+<div class="trade-success-overlay" id="tradeSuccessOverlay">
+  <div class="trade-success-modal">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 11-5.93-9.14"/><path d="M22 4L12 14.01l-3-3"/></svg>
+    <h3>¡Traspaso Realizado!</h3>
+    <p>
+      Has enviado a <strong>{{ trade_success.my_names }}</strong> a {{ trade_success.other_team }}.<br>
+      Has recibido a <strong>{{ trade_success.other_names }}</strong>.
+    </p>
+  </div>
+</div>
+{% endif %}
+
+<!-- Dismiss Modal -->
+<div class="dismiss-modal" id="dismissModal">
+  <div class="dismiss-modal-content">
+    <div class="dismiss-modal-header">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 21v-2a4 4 0 00-4-4H6a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M17 11l6 6m0-6l-6 6"/></svg>
+      <span>Despedir Jugador</span>
+    </div>
+    <div class="dismiss-modal-body">
+      <p>Estás a punto de despedir a <strong id="dismissPlayerName"></strong>.</p>
+      <p>La penalización por despido será de <strong class="dismiss-penalty" id="dismissPenalty"></strong> (50% del salario anual × años restantes de contrato).</p>
+      <p class="dismiss-warning">El jugador quedará sin equipo y no estará contento con la decisión.</p>
+    </div>
+    <div class="dismiss-modal-footer">
+      <button class="btn-dismiss-cancel">Cancelar</button>
+      <form method="post" action="{% url 'dismiss_player' %}" id="dismissForm">
+        {% csrf_token %}
+        <input type="hidden" name="player_id" id="dismissFormPlayerId">
+        <button type="submit" class="btn-dismiss-confirm">Confirmar Despido</button>
+      </form>
+    </div>
+  </div>
+</div>
+
+<script>
+{% if trade_success %}
+setTimeout(function() {
+  const overlay = document.getElementById('tradeSuccessOverlay');
+  if (overlay) {
+    overlay.style.opacity = '0';
+    overlay.style.transition = 'opacity .5s';
+    setTimeout(function() { overlay.remove(); }, 500);
+  }
+}, 5000);
+{% endif %}
+
+document.querySelectorAll('.player-row').forEach(row => {
+  row.addEventListener('click', function() {
+    document.querySelectorAll('.player-row').forEach(r => r.classList.remove('selected'));
+    this.classList.add('selected');
+
+    const d = this.dataset;
+    const ovr = parseInt(d.ovr);
+    const seasonGames = parseInt(d.seasonGames) || 0;
+    const pts = d.pts || '0';
+    const reb = d.reb || '0';
+    const ast = d.ast || '0';
+    const attrs = [
+      {label: 'Tiro', val: parseInt(d.shooting)},
+      {label: 'Triple', val: parseInt(d.threepoint)},
+      {label: 'Pase', val: parseInt(d.passing)},
+      {label: 'Bote', val: parseInt(d.ballhandling)},
+      {label: 'Defensa', val: parseInt(d.defense)},
+      {label: 'Rebote', val: parseInt(d.rebounding)},
+      {label: 'Velocidad', val: parseInt(d.speed)},
+      {label: 'Atletismo', val: parseInt(d.athleticism)},
+      {label: 'IQ', val: parseInt(d.iq)},
+      {label: 'Robos', val: parseInt(d.steals)},
+      {label: 'Tapones', val: parseInt(d.blocks)},
+    ];
+
+    let attrsHtml = '';
+    attrs.forEach(a => {
+      const cls = a.val >= 70 ? 'high' : a.val >= 50 ? 'mid' : 'low';
+      attrsHtml += `<div class="detail-attr-row">
+        <span class="detail-attr-label">${a.label}</span>
+        <div class="detail-attr-bar"><div class="detail-attr-fill ${cls}" style="width:${a.val}%"></div></div>
+        <span class="detail-attr-val">${a.val}</span>
+      </div>`;
+    });
+
+    const salary = parseInt(d.salary).toLocaleString('es-ES');
+    const injuryHtml = parseInt(d.injuryDays) > 0
+      ? `<div class="detail-injury">🏥 ${d.injuryType} — ${d.injuryDays} días de baja</div>`
+      : `<div class="detail-healthy">✓ Disponible</div>`;
+
+    document.getElementById('playerDetail').innerHTML = `
+      <div class="detail-card">
+        <div class="detail-header">
+          <div class="detail-top">
+            <div class="detail-avatar"><span class="detail-num">${d.pos}</span></div>
+            <div class="detail-info">
+              <span class="detail-name">${d.name}</span>
+              <span class="detail-meta">${d.age} años · ${d.nat}</span>
+              <span class="detail-phys">${(parseInt(d.height) / 100).toFixed(2)}m · ${d.weight}kg</span>
+            </div>
+          </div>
+          <div class="detail-ovr">
+            <span class="detail-ovr-val">${d.ovr}</span>
+            <span class="detail-ovr-label">OVR</span>
+          </div>
+        </div>
+        ${injuryHtml}
+        <div class="detail-attrs">${attrsHtml}</div>
+        ${d.seasonGames > 0 ? `
+        <div class="detail-season-stats">
+          <div class="season-stat-card">
+            <span class="season-stat-val">${d.pts}</span>
+            <span class="season-stat-label">PTS</span>
+          </div>
+          <div class="season-stat-card">
+            <span class="season-stat-val">${d.reb}</span>
+            <span class="season-stat-label">REB</span>
+          </div>
+          <div class="season-stat-card">
+            <span class="season-stat-val">${d.ast}</span>
+            <span class="season-stat-label">AST</span>
+          </div>
+        </div>
+        ` : ''}
+        <div class="detail-footer">
+          <div class="detail-contract">
+            <span class="detail-contract-label">Contrato</span>
+            <span class="detail-contract-value">$${salary}/año · ${d.contract} año${d.contract !== '1' ? 's' : ''}</span>
+          </div>
+          <div class="detail-potential">
+            <span class="detail-potential-label">Potencial</span>
+            <span class="detail-potential-value">${d.pot}</span>
+          </div>
+        </div>
+        <div class="detail-dismiss-section">
+          <button class="btn-dismiss" id="btnDismiss" data-player="${d.playerId}" data-name="${d.name}" data-salary="${d.salary}" data-contract="${d.contract}">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 21v-2a4 4 0 00-4-4H6a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M17 11l6 6m0-6l-6 6"/></svg>
+            Despedir Jugador
+          </button>
+        </div>
+        ${parseInt(d.contract) <= 1 ? `
+        <div class="detail-renew-section">
+          <button class="btn-renew" id="btnRenew" data-player="${d.playerId}">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 6l-9.5 9.5-5-5L1 18"/><path d="M17 6h6v6"/></svg>
+            Renovar Contrato
+          </button>
+          <div class="renew-form" id="renewForm" style="display:none;">
+            <form method="post" action="{% url 'contract_offer' %}" id="contractForm">
+              {% csrf_token %}
+              <input type="hidden" name="player_id" value="${d.playerId}" id="formPlayerId">
+              <div class="form-row">
+                <label>Salario</label>
+                <select name="salary" id="formSalary">
+                  ${generateSalaryOptions(parseInt(d.salary))}
+                </select>
+              </div>
+              <div class="form-row">
+                <label>Años</label>
+                <select name="years" id="formYears">
+                  ${generateYearOptions(parseInt(d.contract))}
+                </select>
+              </div>
+              <button type="submit" class="btn-submit-offer">Enviar Oferta</button>
+            </form>
+          </div>
+        </div>
+        ` : ''}
+      </div>
+    `;
+
+    // Bind renew button
+    const renewBtn = document.getElementById('btnRenew');
+    if (renewBtn) {
+      renewBtn.addEventListener('click', function() {
+        document.getElementById('renewForm').style.display = 'block';
+        this.style.display = 'none';
+      });
+    }
+  });
+});
+
+// Dismiss modal
+document.addEventListener('click', function(e) {
+  if (e.target.closest('.btn-dismiss')) {
+    const btn = e.target.closest('.btn-dismiss');
+    const playerId = btn.dataset.player;
+    const playerName = btn.dataset.name;
+    const salary = parseInt(btn.dataset.salary);
+    const contract = parseInt(btn.dataset.contract);
+    const penalty = salary * contract * 0.5;
+
+    document.getElementById('dismissPlayerName').textContent = playerName;
+    document.getElementById('dismissPenalty').textContent = '$' + penalty.toLocaleString('es-ES');
+    document.getElementById('dismissFormPlayerId').value = playerId;
+    document.getElementById('dismissModal').classList.add('show');
+  }
+
+  if (e.target.closest('.btn-dismiss-cancel')) {
+    document.getElementById('dismissModal').classList.remove('show');
+  }
+});
+
+function generateSalaryOptions(currentSalary) {
+  let html = '';
+  const currentM = Math.round(currentSalary / 1_000_000);
+  for (let s = 2; s <= 60; s += 2) {
+    const selected = s === currentM ? ' selected' : '';
+    html += `<option value="${s * 1000000}"${selected}>$${s}M/año</option>`;
+  }
+  return html;
+}
+
+function generateYearOptions(currentYears) {
+  let html = '';
+  for (let y = 1; y <= 5; y++) {
+    const selected = y === currentYears ? ' selected' : '';
+    html += `<option value="${y}"${selected}>${y} año${y > 1 ? 's' : ''}</option>`;
+  }
+  return html;
+}
+
+document.getElementById('btnAdvance')?.addEventListener('click', function() {
+  document.getElementById('advanceForm').submit();
+});
+document.getElementById('btnReset')?.addEventListener('click', function(e) {
+  e.preventDefault();
+  if (confirm('¿Seguro que quieres reiniciar la partida? Se perderán todos los datos.')) {
+    document.getElementById('resetForm').submit();
+  }
+});
+
+// Auto-dismiss contract result after 5 seconds
+const resultEl = document.getElementById('contractResult');
+if (resultEl) {
+  setTimeout(function() {
+    resultEl.style.opacity = '0';
+    resultEl.style.transform = 'translateY(-10px)';
+    setTimeout(function() {
+      resultEl.remove();
+    }, 400);
+  }, 5000);
+}
+</script>
+
+</body>
+</html>

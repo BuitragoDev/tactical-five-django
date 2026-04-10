@@ -1,0 +1,101 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Resumen de Temporada · Tactical Five</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Roboto+Condensed:wght@300;400;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="{% static 'css/season_summary.css' %}">
+</head>
+<body>
+
+<div class="bg-noise"></div>
+<div class="bg-stripes"></div>
+
+<div class="app">
+
+  <div class="main">
+    <header class="top-header">
+      <div class="header-left">
+        {% if team.logo %}
+        <img src="{% static team.logo %}" alt="{{ team.name }}" class="header-logo">
+        {% endif %}
+        <div class="header-info">
+          <div class="header-team-name">{{ team.name }} <span class="header-subtitle">(RESUMEN DE TEMPORADA)</span></div>
+          <div class="header-manager">Manager: <strong>{{ manager_name }}</strong></div>
+        </div>
+      </div>
+      <div class="header-right">
+        <div class="header-season">
+          <span class="season-label">Temporada {{ season_label }}</span>
+        </div>
+        <div class="header-date">{{ current_date }}</div>
+        <a href="{% url 'player_awards' %}" class="btn-header-back">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="8" r="7"/>
+            <polyline points="8.21 13.89 7 23 12 20 17 23 15.79 13.88"/>
+          </svg>
+          PREMIOS JUGADORES
+        </a>
+      </div>
+    </header>
+
+    <div class="content">
+
+      <div class="summary-header" style="margin-top: 20px;">
+          <h1>Campeón de la NBA</h1>
+          <span class="season-tag">{{ season_label }}</span>
+      </div>
+
+      <div class="summary-container">
+        {% if champion %}
+        <div class="champion-card">
+          <div class="trophy-icon">&#x1F3C6;</div>
+          <h2 class="champion-name">{{ champion.name }}</h2>
+          <div class="champion-details">
+            <div class="champion-logo">
+              {% if champion.logo %}
+              <img src="{% static champion.logo %}" alt="{{ champion.abbreviation }}">
+              {% endif %}
+            </div>
+            <div class="finals-result">
+              <span class="result-label">Resultado Finales</span>
+              <span class="result-score">{{ champion.abbreviation }} {{ finals_result }} {{ finalist.abbreviation }}</span>
+            </div>
+          </div>
+        </div>
+
+        {% if finals_mvp %}
+        <div class="finals-mvp-card">
+          <div class="mvp-label">MVP de las Finales</div>
+          <div class="mvp-info">
+            <div class="mvp-name">{{ finals_mvp.player__first_name }} {{ finals_mvp.player__last_name }}</div>
+            <div class="mvp-team">{{ finals_mvp.player__team__name }}</div>
+            <div class="mvp-stat-row">
+              <div class="mvp-stat-box">
+                <span class="stat-val">{{ finals_mvp.avg_pts|floatformat:1 }}</span>
+                <span class="stat-label">PTS</span>
+              </div>
+              <div class="mvp-stat-box">
+                <span class="stat-val">{{ finals_mvp.avg_reb|floatformat:1 }}</span>
+                <span class="stat-label">REB</span>
+              </div>
+              <div class="mvp-stat-box">
+                <span class="stat-val">{{ finals_mvp.avg_ast|floatformat:1 }}</span>
+                <span class="stat-label">AST</span>
+              </div>
+            </div>
+          </div>
+        </div>
+        {% endif %}
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>

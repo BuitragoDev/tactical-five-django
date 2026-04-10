@@ -1,0 +1,84 @@
+<aside class="sidebar">
+  <div class="sidebar-brand">
+    <div class="brand-icon">TF</div>
+    <div class="brand-text">TACTICAL <span>FIVE</span></div>
+  </div>
+
+  <nav class="sidebar-nav">
+    <a href="{% url 'dashboard' %}" class="nav-item {% if sidebar_page == 'dashboard' %}active{% endif %}">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-4 0a1 1 0 01-1-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 01-1 1"/></svg>
+      <span>Inicio</span>
+    </a>
+    <a href="{% url 'roster' %}" class="nav-item {% if sidebar_page == 'roster' %}active{% endif %}">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/></svg>
+      <span>Plantilla</span>
+    </a>
+    <a href="{% url 'calendar' %}" class="nav-item {% if sidebar_page == 'calendar' %}active{% endif %}">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>
+      <span>Calendario</span>
+    </a>
+    <a href="{% url 'standings' %}" class="nav-item {% if sidebar_page == 'standings' %}active{% endif %}">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 21h8m-4-4v4m-5-8h10a2 2 0 002-2V7a2 2 0 00-2-2H6a2 2 0 00-2 2v4a2 2 0 002 2z"/><path d="M12 3v4"/></svg>
+      <span>Clasificacion</span>
+    </a>
+    <a href="{% url 'palmares' %}" class="nav-item {% if sidebar_page == 'palmares' %}active{% endif %}">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="7"/><polyline points="8.21 13.89 7 23 12 20 17 23 15.79 13.88"/></svg>
+      <span>Palmares</span>
+    </a>
+    <a href="{% url 'results' %}" class="nav-item {% if sidebar_page == 'results' %}active{% endif %}">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9H4.5a2.5 2.5 0 010-5C7 4 6 9 6 9zM18 9h1.5a2.5 2.5 0 000-5C17 4 18 9 18 9zM4 22h16M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20 7 22M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20 17 22M18 2H6v7a6 6 0 0012 0V2z"/></svg>
+      <span>Resultados</span>
+    </a>
+    <a href="{% url 'bracket' %}" class="nav-item {% if sidebar_page == 'bracket' %}active{% endif %}">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 3H5a2 2 0 00-2 2v4m6-6h8a2 2 0 012 2v4M9 3v18m0 0h8a2 2 0 002-2v-4M9 21H5a2 2 0 01-2-2v-4m12 0v4m0-4l4-4m-4 4l-4-4"/></svg>
+      <span>Playoffs</span>
+    </a>
+    <a href="{% url 'player_stats' %}" class="nav-item {% if sidebar_page == 'player_stats' %}active{% endif %}">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 20V10M12 20V4M6 20v-6"/></svg>
+      <span>Estadisticas</span>
+    </a>
+    <a href="{% url 'records' %}" class="nav-item {% if sidebar_page == 'records' %}active{% endif %}">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 15l-2 5l9-13h-7l2-5l-9 13h7z"/></svg>
+      <span>Records</span>
+    </a>
+    <a href="{% url 'trade' %}" class="nav-item {% if sidebar_page == 'trade' %}active{% endif %}">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.3 5.2a1 1 0 00.9 1.8h12.6M17 17v4m-4 0h4"/></svg>
+      <span>Mercado</span>
+    </a>
+    <a href="{% url 'finances' %}" class="nav-item {% if sidebar_page == 'finances' %}active{% endif %}">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/></svg>
+      <span>Finanzas</span>
+    </a>
+    <a href="{% url 'sponsors' %}" class="nav-item {% if sidebar_page == 'sponsors' %}active{% endif %}">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"/></svg>
+      <span>Patrocinadores</span>
+    </a>
+    <a href="{% url 'television' %}" class="nav-item {% if sidebar_page == 'television' %}active{% endif %}">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="7" width="20" height="15" rx="2" ry="2"/><polyline points="17 2 12 7 7 2"/></svg>
+      <span>Television</span>
+    </a>
+    <a href="{% url 'arena' %}" class="nav-item {% if sidebar_page == 'arena' %}active{% endif %}">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 21h18M3 7v14M21 7v14M6 11h4M6 15h4M14 11h4M14 15h4M9 21V11h6v10M12 3L3 7h18L12 3z"/></svg>
+      <span>Pabellon</span>
+    </a>
+    <a href="{% url 'messages' %}" class="nav-item {% if sidebar_page == 'messages' %}active{% endif %}">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><path d="M22 6l-10 7L2 6"/></svg>
+      <span>Mensajes</span>
+    </a>
+  </nav>
+
+  <div class="sidebar-footer">
+    <a href="#" class="nav-reset-link" id="btnReset">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>
+      <span>Reiniciar Partida</span>
+    </a>
+    <span class="version-tag">v0.1.1 Alpha</span>
+  </div>
+
+  <form method="post" action="{% url 'advance_day' %}" id="advanceForm" style="display:none;">
+    {% csrf_token %}
+  </form>
+  <form method="post" action="{% url 'reset_game' %}" id="resetForm" style="display:none;">
+    {% csrf_token %}
+  </form>
+</aside>

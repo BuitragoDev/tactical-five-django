@@ -1,0 +1,249 @@
+/* ═══════════════════════════════════════════
+   BRACKET-SPECIFIC STYLES
+   (dashboard.css loaded first for base styles)
+   ═══════════════════════════════════════════ */
+
+:root {
+  --playoff:   rgba(212,160,23,.15);
+  --playin:    rgba(74,128,240,.15);
+}
+
+/* Override dashboard grid layout */
+.content {
+  display: block !important;
+  grid-template-columns: none !important;
+  grid-template-rows: none !important;
+  gap: 0 !important;
+  padding: 24px 28px !important;
+}
+
+/* BRACKET EMPTY */
+.bracket-empty {
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  min-height: 60vh;
+  gap: 16px;
+  text-align: center;
+}
+.bracket-empty svg {
+  width: 80px; height: 80px;
+  color: var(--text-dim);
+  opacity: .3;
+}
+.bracket-empty h2 {
+  font-family: 'Oswald', sans-serif;
+  font-size: 28px; font-weight: 600;
+  letter-spacing: 3px; text-transform: uppercase;
+  color: var(--text);
+}
+.bracket-empty p {
+  font-size: 16px;
+  color: var(--text-dim);
+  max-width: 500px;
+  line-height: 1.6;
+}
+
+/* PHASE INDICATOR */
+.phase-indicator {
+  display: flex; align-items: center; gap: 8px;
+  font-family: 'Oswald', sans-serif;
+  font-size: 14px; font-weight: 500;
+  letter-spacing: 2px; text-transform: uppercase;
+  color: var(--text-dim);
+}
+.phase-dot {
+  width: 8px; height: 8px; border-radius: 50%;
+}
+.phase-regular { background: var(--text-dim); }
+.phase-playin { background: var(--blue-lt); box-shadow: 0 0 8px var(--blue-lt); }
+.phase-playoffs { background: var(--gold); box-shadow: 0 0 8px var(--gold); }
+.phase-finished { background: var(--green); box-shadow: 0 0 8px var(--green); }
+
+/* BRACKET CONTAINER */
+.bracket-container {
+  display: flex; flex-direction: column; gap: 32px;
+}
+.bracket-title-bar {
+  display: flex; align-items: center; justify-content: space-between;
+  padding-bottom: 16px;
+  border-bottom: 1px solid var(--border);
+}
+.bracket-title-bar h1 {
+  font-family: 'Oswald', sans-serif;
+  font-size: 32px; font-weight: 700;
+  letter-spacing: 4px; text-transform: uppercase;
+  color: var(--text-lt);
+}
+
+/* CONFERENCE BRACKET */
+.conference-bracket {
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  padding: 20px;
+}
+.conf-title {
+  font-family: 'Oswald', sans-serif;
+  font-size: 20px; font-weight: 600;
+  letter-spacing: 3px; text-transform: uppercase;
+  color: var(--gold);
+  margin-bottom: 20px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--border);
+}
+.finals-title {
+  color: var(--gold-lt);
+  font-size: 22px;
+}
+
+/* PLAYIN MATCHUPS */
+.playin-matchups {
+  display: flex;
+  gap: 20px;
+  flex-wrap: wrap;
+}
+.playin-series {
+  flex: 1;
+  min-width: 220px;
+  background: var(--bg3);
+  border: 1px solid var(--border);
+  padding: 12px;
+}
+.playin-series.eliminator {
+  border-color: var(--blue);
+}
+
+/* PLAYOFF ROUND */
+.playoff-round {
+  margin-bottom: 24px;
+}
+.round-name {
+  font-family: 'Oswald', sans-serif;
+  font-size: 16px; font-weight: 500;
+  letter-spacing: 2px; text-transform: uppercase;
+  color: var(--text);
+  margin-bottom: 12px;
+}
+
+/* SERIES LIST */
+.series-list {
+  display: flex;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+.series-card {
+  flex: 1;
+  min-width: 240px;
+  background: var(--bg3);
+  border: 1px solid var(--border);
+  padding: 12px;
+}
+.finals-card {
+  min-width: 300px;
+  max-width: 400px;
+  border-color: var(--gold);
+}
+
+/* SERIES HEADER */
+.series-header {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 10px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--border);
+}
+.series-label {
+  font-family: 'Oswald', sans-serif;
+  font-size: 13px; font-weight: 600;
+  letter-spacing: 1px; text-transform: uppercase;
+  color: var(--text);
+}
+.series-type {
+  font-size: 11px;
+  color: var(--text-dim);
+  letter-spacing: 1px;
+}
+
+/* GAME ROW */
+.game-row {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 6px 0;
+}
+.game-team {
+  display: flex; align-items: center; gap: 6px;
+  flex: 1;
+  font-size: 13px; font-weight: 400;
+  color: var(--text);
+}
+.game-team img {
+  width: 20px; height: 20px;
+  object-fit: contain;
+}
+.game-team.my-team {
+  color: var(--gold);
+  font-weight: 700;
+}
+.game-score {
+  display: flex; align-items: center; gap: 4px;
+  font-family: 'Oswald', sans-serif;
+  font-size: 16px; font-weight: 600;
+  min-width: 80px;
+  justify-content: center;
+}
+.score {
+  color: var(--text-dim);
+}
+.score.winner {
+  color: var(--green);
+}
+.vs {
+  color: var(--border2);
+  font-weight: 400;
+  font-size: 12px;
+}
+.pending {
+  color: var(--text-dim);
+  font-size: 12px;
+  font-style: italic;
+}
+
+/* SERIES SCORE */
+.series-score {
+  margin-top: 8px;
+  padding-top: 8px;
+  border-top: 1px solid var(--border);
+  display: flex; align-items: center; justify-content: center; gap: 4px;
+}
+.series-matchup {
+  display: flex; align-items: center; gap: 8px;
+  font-family: 'Oswald', sans-serif;
+  font-size: 15px; font-weight: 600;
+}
+.matchup-team {
+  color: var(--text-dim);
+  letter-spacing: 1px;
+}
+.matchup-team.series-leader {
+  color: var(--gold);
+}
+.matchup-score {
+  color: var(--text-lt);
+  background: var(--bg3);
+  padding: 2px 10px;
+  border-radius: 3px;
+  border: 1px solid var(--border2);
+  min-width: 50px;
+  text-align: center;
+}
+.game-result-badge {
+  font-size: 10px;
+  padding: 2px 6px;
+  border-radius: 2px;
+  font-family: 'Oswald', sans-serif;
+  letter-spacing: 1px;
+}
+.game-result-badge.win-home {
+  background: rgba(39,174,96,.2);
+  color: var(--green);
+}
+.game-result-badge.win-away {
+  background: rgba(192,57,43,.2);
+  color: var(--red);
+}

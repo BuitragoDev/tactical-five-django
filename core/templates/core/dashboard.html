@@ -1,0 +1,288 @@
+{% load static humanize %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dashboard · Tactical Five</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="{% static 'css/dashboard.css' %}">
+</head>
+<body>
+
+<div class="bg-noise"></div>
+<div class="bg-stripes"></div>
+
+<div class="app">
+
+  {% include 'core/sidebar.html' with sidebar_page='dashboard' %}
+
+<form method="post" action="{% url 'advance_day' %}" id="advanceForm" style="display:none;">
+  {% csrf_token %}
+</form>
+<form method="post" action="{% url 'reset_game' %}" id="resetForm" style="display:none;">
+  {% csrf_token %}
+</form>
+
+
+  <!-- ═══════════ MAIN ═══════════ -->
+  <div class="main">
+
+    {% include 'core/header.html' %}
+
+    <!-- Contenido -->
+    <div class="content">
+
+      <!-- Clasificacion -->
+      <div class="panel panel-standings">
+        <div class="panel-title-row">
+          <div class="panel-title">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 21h8m-4-4v4m-5-8h10a2 2 0 002-2V7a2 2 0 00-2-2H6a2 2 0 00-2 2v4a2 2 0 002 2z"/><path d="M12 3v4"/></svg>
+            Clasificacion
+          </div>
+          <div class="conf-filters">
+            <button class="conf-btn{% if default_conf == 'East' %} active{% endif %}" data-conf="East" id="confEast">Este</button>
+            <button class="conf-btn{% if default_conf == 'West' %} active{% endif %}" data-conf="West" id="confWest">Oeste</button>
+          </div>
+        </div>
+        <table class="standings-table">
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Equipo</th>
+              <th>PJ</th>
+              <th>G</th>
+              <th>P</th>
+              <th>%</th>
+              <th>Racha</th>
+            </tr>
+          </thead>
+          <tbody id="standingsBody">
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Estadisticas jugadores -->
+      <div class="panel panel-stats">
+        <div class="panel-title">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 20V10M12 20V4M6 20v-6"/></svg>
+          Estadisticas de Jugadores
+        </div>
+        <div class="stats-grid">
+          <div class="stat-card">
+            <div class="stat-card-label">Maximo Anotador</div>
+            {% if top_scorer %}
+            <div class="stat-card-value">{{ top_scorer.value }}</div>
+            <div class="stat-card-player">{{ top_scorer.name }}</div>
+            <div class="stat-card-games">{{ top_scorer.games }} partidos jugados</div>
+            {% else %}
+            <div class="stat-card-value">--</div>
+            {% endif %}
+          </div>
+          <div class="stat-card">
+            <div class="stat-card-label">Maximo Rebotador</div>
+            {% if top_rebounder %}
+            <div class="stat-card-value">{{ top_rebounder.value }}</div>
+            <div class="stat-card-player">{{ top_rebounder.name }}</div>
+            <div class="stat-card-games">{{ top_rebounder.games }} partidos jugados</div>
+            {% else %}
+            <div class="stat-card-value">--</div>
+            {% endif %}
+          </div>
+          <div class="stat-card">
+            <div class="stat-card-label">Maximo Asistente</div>
+            {% if top_assister %}
+            <div class="stat-card-value">{{ top_assister.value }}</div>
+            <div class="stat-card-player">{{ top_assister.name }}</div>
+            <div class="stat-card-games">{{ top_assister.games }} partidos jugados</div>
+            {% else %}
+            <div class="stat-card-value">--</div>
+            {% endif %}
+          </div>
+          <div class="stat-card">
+            <div class="stat-card-label">Mejor Valoracion</div>
+            {% if top_rated %}
+            <div class="stat-card-value">{{ top_rated.value }}</div>
+            <div class="stat-card-player">{{ top_rated.name }}</div>
+            <div class="stat-card-games">{{ top_rated.games }} partidos jugados</div>
+            {% else %}
+            <div class="stat-card-value">--</div>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+
+      <!-- Relaciones con la directiva -->
+      <div class="panel panel-board">
+        <div class="panel-title">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a2 2 0 00-2-2M16 3.13a4 4 0 010 7.75"/></svg>
+          Relaciones
+        </div>
+        <div class="board-grid">
+          <div class="board-item">
+            <div class="board-label">Confianza</div>
+            <div class="board-bar">
+              <div class="board-fill" style="width:{{ board_trust }}%; background: {% if board_trust >= 80 %}var(--green){% elif board_trust >= 50 %}var(--gold){% else %}var(--red){% endif %}"></div>
+            </div>
+            <div class="board-value">{{ board_trust }}%</div>
+          </div>
+          <div class="board-item">
+            <div class="board-label">Moral del Equipo</div>
+            <div class="board-bar">
+              <div class="board-fill" style="width:{{ board_morale }}%; background: {% if board_morale >= 80 %}var(--green){% elif board_morale >= 50 %}var(--gold){% else %}var(--red){% endif %}"></div>
+            </div>
+            <div class="board-value">{{ board_morale }}%</div>
+          </div>
+          <div class="board-item">
+            <div class="board-label">Confianza de la Prensa</div>
+            <div class="board-bar">
+              <div class="board-fill" style="width:{{ board_pressure }}%; background: {% if board_pressure >= 80 %}var(--green){% elif board_pressure >= 50 %}var(--gold){% else %}var(--red){% endif %}"></div>
+            </div>
+            <div class="board-value">{{ board_pressure }}%</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Ultimo partido -->
+      <div class="panel panel-last-game">
+        <div class="panel-title">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="7"/><path d="M8.21 13.89L7 23l5-3 5 3-1.21-9.12"/></svg>
+          Ultimo Partido
+          {% if last_result %}
+          <span class="panel-date">{{ last_result.date }}</span>
+          {% endif %}
+        </div>
+        {% if last_result %}
+        <div class="game-result">
+          <div class="game-team home">
+            {% if last_result.home_team_logo %}
+            <img src="{% static last_result.home_team_logo %}" alt="{{ last_result.home_team_name }}" class="game-team-logo">
+            {% endif %}
+            <span class="game-team-name">{{ last_result.home_team_name }}</span>
+          </div>
+          <div class="game-score">
+            <span class="score-home">{{ last_result.home_score }}</span>
+            <span class="score-sep">-</span>
+            <span class="score-away">{{ last_result.away_score }}</span>
+          </div>
+          <div class="game-team away">
+            {% if last_result.away_team_logo %}
+            <img src="{% static last_result.away_team_logo %}" alt="{{ last_result.away_team_name }}" class="game-team-logo">
+            {% endif %}
+            <span class="game-team-name">{{ last_result.away_team_name }}</span>
+          </div>
+        </div>
+        {% else %}
+        <div class="no-games">Aún no se han jugado partidos</div>
+        {% endif %}
+      </div>
+
+      <!-- Proximo partido -->
+      <div class="panel panel-next-game">
+        <div class="panel-title">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>
+          Proximo Partido
+          {% if next_game %}
+          <span class="panel-date">{{ next_game.date }}</span>
+          {% endif %}
+        </div>
+        {% if next_game %}
+        <div class="game-next">
+          <div class="game-team home">
+            {% if next_game.home_team_logo %}
+            <img src="{% static next_game.home_team_logo %}" alt="{{ next_game.home_team_name }}" class="game-team-logo">
+            {% endif %}
+            <span class="game-team-name">{{ next_game.home_team_name }}</span>
+          </div>
+          <div class="game-vs">
+            <span class="vs-text">VS</span>
+          </div>
+          <div class="game-team away">
+            <span class="game-team-name">{{ next_game.away_team_name }}</span>
+            {% if next_game.away_team_logo %}
+            <img src="{% static next_game.away_team_logo %}" alt="{{ next_game.away_team_name }}" class="game-team-logo">
+            {% endif %}
+          </div>
+        </div>
+        {% else %}
+        <div class="no-games">No hay más partidos programados</div>
+        {% endif %}
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<script>
+const STATIC_URL = "{% get_static_prefix %}";
+const TEAM_ID = {{ team.pk }};
+const DEFAULT_CONF = "{{ default_conf }}";
+
+const STANDINGS = {
+  East: {{ standings_east_json|safe }},
+  West: {{ standings_west_json|safe }},
+};
+
+function renderStandings(conf) {
+  const rows = STANDINGS[conf] || [];
+  let html = '';
+  rows.forEach(s => {
+    const isMy = s.team_id === TEAM_ID;
+    const logo = s.logo ? `<img src="${STATIC_URL}${s.logo}" alt="${s.name}" class="mini-logo">` : '';
+    const streakHtml = s.streak
+      ? `<span class="streak ${s.streak.type === 'win' ? 'streak-win' : s.streak.type === 'loss' ? 'streak-loss' : ''}">${s.streak.text}</span>`
+      : '-';
+    html += `<tr class="${isMy ? 'my-team' : ''}">
+      <td class="rank">${s.rank}</td>
+      <td class="team-name">${logo} ${s.name}</td>
+      <td class="games-played">${s.games_played}</td>
+      <td class="wins">${s.wins}</td>
+      <td class="losses">${s.losses}</td>
+      <td class="pct">${s.pct.toFixed(3)}</td>
+      <td class="streak-cell">${streakHtml}</td>
+    </tr>`;
+  });
+  document.getElementById('standingsBody').innerHTML = html;
+}
+
+document.querySelectorAll('.conf-btn').forEach(btn => {
+  btn.addEventListener('click', function() {
+    document.querySelectorAll('.conf-btn').forEach(b => b.classList.remove('active'));
+    this.classList.add('active');
+    renderStandings(this.dataset.conf);
+  });
+});
+
+renderStandings(DEFAULT_CONF);
+
+document.getElementById('btnAdvance')?.addEventListener('click', function(e) {
+  if (this.tagName === 'A') return;
+  document.getElementById('advanceForm').submit();
+});
+
+document.addEventListener('keydown', function(e) {
+  if (e.key === 's' || e.key === 'S') {
+    var inputFocused = document.activeElement && (document.activeElement.tagName === 'INPUT' || document.activeElement.tagName === 'SELECT' || document.activeElement.tagName === 'TEXTAREA');
+    if (!inputFocused) {
+      e.preventDefault();
+      var btn = document.getElementById('btnAdvance');
+      if (btn.tagName === 'A') {
+        window.location.href = btn.href;
+      } else {
+        btn.click();
+      }
+    }
+  }
+});
+
+document.getElementById('btnReset').addEventListener('click', function(e) {
+  e.preventDefault();
+  if (confirm('¿Seguro que quieres reiniciar la partida? Se perderán todos los datos.')) {
+    document.getElementById('resetForm').submit();
+  }
+});
+</script>
+
+</body>
+</html>

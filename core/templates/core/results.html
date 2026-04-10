@@ -1,0 +1,180 @@
+{% load static humanize %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Resultados · Tactical Five</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Roboto+Condensed:wght@300;400;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="{% static 'css/results.css' %}">
+</head>
+<body>
+
+<div class="bg-noise"></div>
+<div class="bg-stripes"></div>
+
+<div class="app">
+
+  {% include 'core/sidebar.html' with sidebar_page='results' %}
+
+<form method="post" action="{% url 'advance_day' %}" id="advanceForm" style="display:none;">
+  {% csrf_token %}
+</form>
+<form method="post" action="{% url 'reset_game' %}" id="resetForm" style="display:none;">
+  {% csrf_token %}
+</form>
+
+
+  <div class="main">
+    {% include 'core/header.html' %}
+
+    <div class="content">
+
+      <div class="results-nav">
+        {% if prev_date %}
+        <a href="?date={{ prev_date }}" class="nav-arrow">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M15 19l-7-7 7-7"/></svg>
+        </a>
+        {% else %}
+        <span class="nav-arrow nav-arrow-disabled">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M15 19l-7-7 7-7"/></svg>
+        </span>
+        {% endif %}
+
+        <div class="results-date">
+          <span>{{ selected_date_str }}</span>
+          <button class="btn-calendar-toggle" id="btnCalendarToggle" title="Seleccionar fecha">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>
+          </button>
+        </div>
+
+        {% if next_date %}
+        <a href="?date={{ next_date }}" class="nav-arrow">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M9 5l7 7-7 7"/></svg>
+        </a>
+        {% else %}
+        <span class="nav-arrow nav-arrow-disabled">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M9 5l7 7-7 7"/></svg>
+        </span>
+        {% endif %}
+      </div>
+
+      <div class="calendar-picker" id="calendarPicker">
+        <div class="calendar-picker-header">
+          <button class="cal-nav-btn" id="calPrevMonth">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M15 19l-7-7 7-7"/></svg>
+          </button>
+          <span class="cal-month-title" id="calMonthTitle"></span>
+          <button class="cal-nav-btn" id="calNextMonth">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M9 5l7 7-7 7"/></svg>
+          </button>
+        </div>
+        <div class="cal-day-names">
+          <span>L</span><span>M</span><span>X</span><span>J</span><span>V</span><span>S</span><span>D</span>
+        </div>
+        <div class="cal-grid" id="calGrid">
+        </div>
+      </div>
+
+      {% if day_games %}
+      {% for g in day_games %}
+      <div class="game-card {% if g.home_team == team or g.away_team == team %}my-game{% endif %} {% if not g.is_played %}game-unplayed{% endif %}">
+        <div class="game-card-content">
+          <div class="game-card-side game-card-home">
+            <span class="game-card-team-name {% if g.home_team == team %}my-team{% endif %}">{{ g.home_team.name }}</span>
+            {% if g.home_team.logo %}
+            <img src="{% static g.home_team.logo %}" alt="{{ g.home_team.name }}" class="game-card-logo">
+            {% endif %}
+          </div>
+          <div class="game-card-score">
+            {% if g.is_played %}
+            <span class="game-card-score-val">{{ g.home_score }}</span>
+            <span class="game-card-score-sep">-</span>
+            <span class="game-card-score-val">{{ g.away_score }}</span>
+            {% else %}
+            <span class="game-card-score-val game-score-empty">-</span>
+            <span class="game-card-score-sep">-</span>
+            <span class="game-card-score-val game-score-empty">-</span>
+            {% endif %}
+          </div>
+          <div class="game-card-side game-card-away">
+            {% if g.away_team.logo %}
+            <img src="{% static g.away_team.logo %}" alt="{{ g.away_team.name }}" class="game-card-logo">
+            {% endif %}
+            <span class="game-card-team-name {% if g.away_team == team %}my-team{% endif %}">{{ g.away_team.name }}</span>
+          </div>
+        </div>
+      </div>
+      {% endfor %}
+      {% else %}
+      <div class="no-results">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="10"/><path d="M8 15s1.5 2 4 2 4-2 4-2"/><path d="M9 9h.01M15 9h.01"/></svg>
+        <span>No hay partidos en esta fecha</span>
+      </div>
+      {% endif %}
+
+    </div>
+  </div>
+</div>
+
+<script>
+const CALENDAR_MONTHS = {{ calendar_months_json|safe }};
+const SELECTED_DATE = '{{ selected_date_str_full }}';
+let currentCalIndex = 0;
+
+// Find the month index for the selected date
+CALENDAR_MONTHS.forEach((m, i) => {
+  m.days.forEach(d => {
+    if (d && d.date_str === SELECTED_DATE) currentCalIndex = i;
+  });
+});
+
+function renderCalendar(idx) {
+  if (idx < 0 || idx >= CALENDAR_MONTHS.length) return;
+  currentCalIndex = idx;
+  const m = CALENDAR_MONTHS[idx];
+  document.getElementById('calMonthTitle').textContent = m.month_name + ' ' + m.year;
+  const grid = document.getElementById('calGrid');
+  grid.innerHTML = '';
+  m.days.forEach(d => {
+    if (!d) {
+      grid.innerHTML += '<span class="cal-day cal-empty"></span>';
+    } else {
+      const cls = 'cal-day' + (d.is_selected ? ' cal-selected' : '');
+      grid.innerHTML += '<a href="?date=' + d.date_str + '" class="' + cls + '">' + d.day + '</a>';
+    }
+  });
+  // Update nav buttons
+  document.getElementById('calPrevMonth').style.opacity = idx === 0 ? '0.3' : '1';
+  document.getElementById('calNextMonth').style.opacity = idx === CALENDAR_MONTHS.length - 1 ? '0.3' : '1';
+}
+
+document.getElementById('btnCalendarToggle')?.addEventListener('click', function() {
+  document.getElementById('calendarPicker').classList.toggle('open');
+});
+
+document.getElementById('calPrevMonth')?.addEventListener('click', function() {
+  if (currentCalIndex > 0) renderCalendar(currentCalIndex - 1);
+});
+
+document.getElementById('calNextMonth')?.addEventListener('click', function() {
+  if (currentCalIndex < CALENDAR_MONTHS.length - 1) renderCalendar(currentCalIndex + 1);
+});
+
+renderCalendar(currentCalIndex);
+
+document.getElementById('btnAdvance')?.addEventListener('click', function() {
+  document.getElementById('advanceForm').submit();
+});
+document.getElementById('btnReset')?.addEventListener('click', function(e) {
+  e.preventDefault();
+  if (confirm('¿Seguro que quieres reiniciar la partida? Se perderán todos los datos.')) {
+    document.getElementById('resetForm').submit();
+  }
+});
+</script>
+
+</body>
+</html>
